@@ -45,9 +45,17 @@ Some peopleware:
 * **Benchmarks** are maintained by *Other People*, a.k.a. the Omnibenchmark Team (**Benchmark Curators**).
 
 ```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+```mermaid
 flowchart LR;
-    Method    --| owned_by |--> MethodMaintainer;
-    Benchmark --| owned_by |--> BenchmarkCurator;
+    Method    -- owned_by --> MethodMaintainer;
+    Benchmark -- owned_by --> BenchmarkCurator;
 ```
 
 This distinction is important because it can clearly delimit responsibilities.
