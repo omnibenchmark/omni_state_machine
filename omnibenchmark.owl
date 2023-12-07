@@ -1,0 +1,161 @@
+@prefix : <http://omnibenchmark.org/omnibenchmark.owl/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://omnibenchmark.org/omnibenchmark.owl/> .
+
+<http://omnibenchmark.org/omnibenchmark.owl> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://omnibenchmark.org/omnibenchmark.owl#defined_by
+:defined_by rdf:type owl:ObjectProperty ;
+            rdfs:domain :Benchmark ;
+            rdfs:range [ rdf:type owl:Restriction ;
+                         owl:onProperty :defined_by ;
+                         owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                         owl:onClass :Orchestrator
+                       ] .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#has_module
+:has_module rdf:type owl:ObjectProperty ;
+            owl:inverseOf :in_benchmark ;
+            rdfs:domain :Benchmark ;
+            rdfs:range :Module .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#in_benchmark
+:in_benchmark rdf:type owl:ObjectProperty ;
+              rdfs:domain :Module ;
+              rdfs:range :Benchmark .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#url
+:url rdf:type owl:ObjectProperty ;
+     rdfs:domain :Orchestrator ;
+     rdfs:range [ rdf:type owl:Restriction ;
+                  owl:onProperty :hasURL ;
+                  owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                  owl:onDataRange xsd:anyURI
+                ] .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://omnibenchmark.org/omnibenchmark.owl#hasName
+:hasName rdf:type owl:DatatypeProperty ;
+         rdfs:domain :Benchmark ;
+         rdfs:range xsd:Name .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#hasURL
+:hasURL rdf:type owl:DatatypeProperty ;
+        rdfs:range xsd:anyURI .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Benchmark
+:Benchmark rdf:type owl:Class ;
+           rdfs:comment "A Benchmark is the topmost entity for OmniBenchmark. A benchmark is composed of different modules." ;
+           owl:versionInfo 1 .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Data
+:Data rdf:type owl:Class ;
+      rdfs:subClassOf :ModuleType .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Environment
+:Environment rdf:type owl:Class ;
+             rdfs:subClassOf :ModuleExecution ;
+             rdfs:comment """the idea here is to add structured values for the computational resources used in this moduleExecution
+
+in principle: workflow executor, runner type (gitlab runner), and computational resources (CPU cores, RAM, GPU etc)""" .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Method
+:Method rdf:type owl:Class ;
+        rdfs:subClassOf :ModuleType .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Metric
+:Metric rdf:type owl:Class ;
+        rdfs:subClassOf :ModuleType .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Module
+:Module rdf:type owl:Class ;
+        rdfs:comment "" .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#ModuleExecution
+:ModuleExecution rdf:type owl:Class ;
+                 rdfs:comment "" .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#ModuleType
+:ModuleType rdf:type owl:Class ;
+            rdfs:subClassOf [ rdf:type owl:Class ;
+                              owl:unionOf ( :Data
+                                            :Method
+                                            :Metric
+                                          )
+                            ] ;
+            rdfs:comment "A Module is essentially a Git Repository" .
+
+
+###  http://omnibenchmark.org/omnibenchmark.owl#Orchestrator
+:Orchestrator rdf:type owl:Class .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://omnibenchmark.org/omnibenchmark.owl#IrisBenchmark
+:IrisBenchmark rdf:type owl:NamedIndividual ,
+                        :Benchmark .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Benchmark
+                :Module
+                :ModuleExecution
+                :ModuleType
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Benchmark
+                :Module
+                :ModuleExecution
+                :ModuleType
+                :Orchestrator
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Data
+                :Method
+                :Metric
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.26.2023-07-17T20:34:13Z) https://github.com/owlcs/owlapi
