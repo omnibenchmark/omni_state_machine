@@ -126,13 +126,39 @@ flowchart TD;
 * A **Round** consists of generic **Module Executions**. These are **Activities** in `renku`'s parlance (more concretely, `prov:CompositePlan`).
 * The Benchmark Maintainers express a series of Expectations that a Valid Method must meet to qualify for a Benchmark **Round**.
   * The first expectation is that every method must consume the canonical dataset as the Initial Object.
-  * The second expectation is that, if any parameter constrain is set, method execution must respect such parameters (??? handwavy).
+  * The second expectation is that, if any parameter constraint is set, method execution must respect such parameters (??? handwavy).
   * The third expectation is that every method must produce the correct number (and type) of Terminal Objects (results, or metrics, unsure).
-* There will be a mechanism that ensures that every BenchmarkRound is properly announced (*this probably means that we need a service and a communication mechanism*).
+ 
+Only validated methods qualify for participation in a given **Round**. Validation means that the method meets the criteria above. If possible, we want to validate constraints before even running the method.
+
+ 
+```mermaid
+graph TD;
+     ValidMethod -- consumes --> ReferenceDataset;
+     ValidMethod -- agrees_with --> ParameterSet;
+     ValidMethod -- produces --> ExpectedMetric;
+```
+* There will be a mechanism that ensures that every Benchmark **Round** is properly announced (*this probably means that we need a service and a communication mechanism*).
+
 * For every **Round** a few things must happen:
   * The **ReferenceDataset** must be updated (if needed).
-  * Every method must make sure to consume this **Dataset** (and previously mutate it, if they need to use a **Filter**).
-  * Only validated methods qualify for participation in a given **Round**. Validation means that the method meets the criteria above. If possible, we want to validate constraints before even running the method.
+  * Every method must make sure to consume this **Dataset**, either directly or
+  * A method can also previously mutate the reference Dataset, if they need to use a **Filter**.
+
+```mermaid
+graph TD;
+     StartRun --> UpdatedDataset;
+     StartRun --> GenParameters;
+     GenParameters --> ParameterSet;
+     UpdatedDataset --> MethodExecution;
+     UpdatedDataset --> FilterMethod;
+     FilterMethod --> MethodExecution;
+     ParameterSet --> MethodExecution;
+     MethodExecution --> Computation;
+     Computation --> Result;
+     Result --> ResultCollection;
+```
+
 * These executions have a given order (they're a Direct Acyclical Graph). Data origins are Initial Objects. Each method branches the Data Transformation. Method Results are Leaves for the execution tree. All Method Results are collected and compared *after all the methods have been executed for a given round*; a **ResultCollection** is the terminal object for a given **Round** (*from the Data Flow perspective*).
 * We do not control the **MethodExecution** environment. This will generally be triggered by renku's usage of `toil`, and ultimately by the assigned capacity to the GitLab runner.
 * The **Knowledge Graph** is a triple store where information about each ModuleExecution is captured. This Knowledge Graph is controlled by the **Benchmark Curators**.
@@ -165,6 +191,19 @@ In this section I want to capture what are the current design constrains, what p
 ### For CP1
 
 - In general, instead of controlling all the method execution by the orchestrator, we might want to consider moving to a more decentralized architecture. We could use [webhooks](https://docs.gitlab.com/ee/user/project/integrations/webhooks.html) for several of these things.
+- We could use something similar to gitlab/github CI definition, declaring "steps".
+- Valid steps: data, filter, method, collection.
+- One such idea is that the orchestrator declares the **constrains** (ReferenceDataset), the canonical ParameterSet, and points to a service where external methods can register themselves as candidates for a round.
+
+### For OP2
+
+- What race conditions are we trying to avoid precisely?
+- One solution I see is like this:
+  - Orchestrator closes round (this involves collecting final results for previous round).
+  - Orchestrator triggers dataset, parameter set
+  - Orchestrator announces round open (perhaps webhook ping to receiver?)
+  - Orchestrator clearly announces time-to-end (so that methods can avoid running if end is close)
+  
 
 ## Notes
 
