@@ -1,0 +1,79 @@
+# name is the short orchestrator name
+name: iris
+
+# description is a longer description that we can display in the dashboard
+description: simple benchmark demo with the iris dataset
+
+# platform is the base url where to lookup relative project URIs
+# in principle, this should be platform agnostic (by using a FQDN in the repo keyword)
+platform: https://gitlab.renkulab.io/
+
+# orchestrator is the orchestrator module. This benchmark definition should live there
+# note that there can be only one orchestrator per benchmark.
+orchestrator:
+  name: iris-orchestrator
+  url: https://gitlab.renkulab.io/omnibenchmark/iris_example/iris-orchestrator
+
+steps:
+  data:
+    initial: true
+    members:
+      # what does it mean to provide more than one dataset? 
+      # can a method choose to use any one of them? does it have to use all?
+      - name: ref
+        repo: omnibenchmark/iris_example/iris-dataset
+
+      - name: noisy
+        repo: omnibenchmark/iris_example/iris-noisy
+
+  process:
+    after:
+      - data
+
+    members:
+      - name: filter
+        repo: omnibenchmark/iris_example/iris-filter
+      # which method brings this? this is something methods can decide to depend on?
+      # can methods announce/register processing steps?
+
+  parameters:
+    after:
+      - data
+
+    members:
+      - name: params
+        repo: omnibenchmark/iris_example/iris-parameters
+
+  methods:
+    after:
+      - process
+      - parameters
+
+    members:
+      - name: random forest
+        repo: benchmark/iris_example/iris-random-forest
+
+      - name: lda
+        repo: omnibenchmark/iris_example/iris-lda
+
+  metrics:
+    after:
+      - methods
+
+    members:
+      - name: accuracy
+        repo: omnibenchmark/iris_example/iris-accuracy
+
+      - name: accuracy_pval
+        repo: omnibenchmark/iris_example/iris-accuracy-pval
+
+
+  summary:
+    terminal: true
+
+    after:
+      - metrics
+
+    members:
+      - name: metrics
+        repo: omnibenchmark/iris_example/irirs-summary-metrics

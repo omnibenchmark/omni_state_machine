@@ -1,3 +1,5 @@
 .swp
 .swo
 .ipynb_checkpoints/
+__pycache__/
+*.lock
