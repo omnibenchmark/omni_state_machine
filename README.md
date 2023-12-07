@@ -30,27 +30,59 @@ I'm going to break out entities into *conceptual* and *operative*. *Conceptual e
 
 * A **Benchmark** is the top-level entity that compares **Methods** among each other. Different benchmarks use different namespaces, and in principle comparisons are only meaningful inside a single Benchmark namespace.
 * The purpose of a given benchmark has a well-defined biological and methodological statement. In essence, we want to compare (and possibly rank) different **Methods** against each other.
-* A **Benchmark** estipulates that all **Methods** have to use a given **Dataset** as the starting point.
-* A **Method** is the Thing that we will ultimately compare. A **method** is a collection of programs that transform data in **Datasets** and produces **Results**.
-* Methods choose to participate in a Benchmark. Participating in the benchmark means:
-  * meeting the I/O requirements (validation). Input means accepting the canonical Dataset, Output means producing the expected metrics.
-  * ensuring that the method is run in a given time window
-  * being represented in the Result Collection.
+
+```mermaid
+graph TD;
+    Benchmark --> Method1;
+    Benchmark --> Method2;
+    Benchmark --> Method...;
+    Benchmark --> Methodn
+    Method1   --> Results;
+    Method2   --> Results;
+    Method... --> Results;
+    Methodn   --> Results;
+```
+
+* A **Method** is the Thing that we will ultimately compare. A **method** is a collection of programs that transform Input Data (from given **Datasets**) and produces **Results**.
+
+```mermaid
+graph TD;
+    Benchmark --> ReferenceDataset;
+    ReferenceDataset --> Method1;
+    ReferenceDataset --> Method2;
+    ReferenceDataset --> Method...;
+    ReferenceDataset --> Methodn;
+    Method1   --> Results;
+    Method2   --> Results;
+    Method... --> Results;
+    Methodn   --> Results;
+```
+
+* A **Method** can use any **Dataset** for development and training, but 
+* A **Benchmark** mandates that all qualifying **Methods** have to use the given **ReferenceDataset** as the starting point for the official run.
+
+```mermaid
+flowchart LR;
+    Dataset -- input_for --> Method;
+    Benchmark -- mandates --> ReferenceDataset -- input_for --> Method; 
+```
+
+
+
+* **Methods** choose to participate in a **Benchmark** [^isopen]. Participating in the benchmark means:
+  * Meeting the I/O requirements (validation). Input means using the **ReferenceDataset**, Output means producing the expected **Metrics**.
+  * Ensuring that the method is run in a given time window
+  * Being represented in the Result Collection.
 * A **ResultCollection** is a set of **Results** produced by different **Methods**. The ResultCollection can vary with time, depending on what methods were available and qualified for a given **Round**.
 
+[^isopen]: Refer to note [^openworld] about definition of Open World.
 
 Some peopleware:
 
 * **Methods** are maintained by *People* (**Method Maintainers**).
 * **Benchmarks** are maintained by *Other People*, a.k.a. the Omnibenchmark Team (**Benchmark Curators**).
 
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
-```
+
 
 ```mermaid
 flowchart LR;
@@ -107,4 +139,6 @@ In this section I want to capture what are the current design constrains, what p
 ### For CP1
 
 - In general, instead of controlling all the method execution by the orchestrator, we might want to consider moving to a more decentralized architecture. We could use [webhooks](https://docs.gitlab.com/ee/user/project/integrations/webhooks.html) for several of these things.
+
+## Notes
 
