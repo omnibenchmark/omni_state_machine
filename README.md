@@ -8,9 +8,9 @@ Again, I'm trying to ignore a lot of specific details, and explore design concep
 
 The main goals are:
 
-- Clarity: Model the core concepts that are needed to declare, manipulate and query Omnibenchmark entities. 
-- Pragmatism: We should start backwards: make sure we make easy to find answers for the important questions. In practice, this means answering the queries of the dashboard and finding good ways to express metrics about the method runs.
-- Performance: Avoid expensive SPARQL queries
+- **Clarity**: Model the core concepts that are needed to declare, manipulate and query Omnibenchmark entities. 
+- **Pragmatism**: We should start backwards: make sure we make easy to find answers for the important questions. In practice, this means answering the queries of the dashboard and finding good ways to express metrics about the method runs.
+- **Performance**: Avoid expensive SPARQL queries
 
 ## Starting Point
 
@@ -95,20 +95,46 @@ This distinction is important because it can clearly delimit responsibilities.
 ### Operative Classes
 
 * A **Module** is a generic bundle of data and code. A particular **Benchmark**, conceptually, is just a collection of modules, of a few predefined classes. The cardinality of benchmark modules can vary: we expect to have one and only one orchestrator module, one (??) data module, several methods, etc.
-* Because we follow renku's FAIR principles, a **Module** always maps to a **Git repository**.
-* The Benchmark Maintainers express a series of Expectations that a Valid Method must meet to be able to qualify for a Benchmark **Round**.
+* Because we embrace renku's FAIR principles, a **Module** always maps to a **Git repository**.
+* The **Orchestrator** is a special class of **Module** that defines the *rules of the game* for a given **Benchmark**.
+* An **Orchestrator** can trigger events (yet to be defined), and the mechanism is usually limited to the capabilities defined by a **Platform**. One such platform is *Gitlab* (CI/CD, for instance).
+* An **Orchestrator** is responsible for *starting* (and *ending*) a **Round** (or **Epoch**).
+* A **Round** is a property of a given Benchmark. It is time-bound, and monotonically increasing.
+* Limiting the known universe of assertions (triples) to a given **Round** has obvious advantages.
+
+```mermaid
+flowchart TD;
+    Benchmark -- has --> Orchestrator;
+    Benchmark -- has --> Dataset;
+    Dataset -- is_a --> Module;
+    Benchmark -- has ---> MethodX;
+    Orchestrator -- defines --> Benchmark;
+    Orchestrator -- is_a --> Module;
+    Orchestrator -- starts ---> Round;
+    MethodX -- is_a --> Module;
+    Dataset -- input_for --> MethodX;
+    MethodX -- produces ---> ResultX;
+    ResultX -- refers_to -----> Round;
+    ResultX -- contained_in --> ResultCollection;
+    ResultCollection -- refers_to --> Round;
+    ResultCollector -- is_a ---> Module;
+    Benchmark -- has --> ResultCollector;
+    ResultCollector --> triggers --> ResultCollection;
+    Module -- expressed_in --> GitRepo;
+```
+
+* A **Round** consists of generic **Module Executions**. These are **Activities** in `renku`'s parlance (more concretely, `prov:CompositePlan`).
+* The Benchmark Maintainers express a series of Expectations that a Valid Method must meet to qualify for a Benchmark **Round**.
   * The first expectation is that every method must consume the canonical dataset as the Initial Object.
   * The second expectation is that, if any parameter constrain is set, method execution must respect such parameters (??? handwavy).
   * The third expectation is that every method must produce the correct number (and type) of Terminal Objects (results, or metrics, unsure).
-* A **BenchmarkRound** is a property of a given Benchmark (**Round** for short). It is time-bound, and monotonically increasing.
-* There will be a mechanism that ensures that every BenchmarkRound is properly announced (probably 
+* There will be a mechanism that ensures that every BenchmarkRound is properly announced (*this probably means that we need a service and a communication mechanism*).
 * For every **Round** a few things must happen:
-  * The (canonical) **Dataset** must be updated (if needed).
+  * The **ReferenceDataset** must be updated (if needed).
   * Every method must make sure to consume this **Dataset** (and previously mutate it, if they need to use a **Filter**).
-  * Only validated methods qualify for participation in a given **Round**. Validation basically means that the method meets the criteria above. If possible, we want to validate constrains before even running the method.
-* A **Round** consists of generic **Module Executions**. These are **Activities** in `renku`'s parlance (more concretely, `prov:CompositePlan`).
-* These executions have a given order (they're a Direct Acyclical Graph). Data origins are Initial Objects. Each method branches the Data Transformation. Method Results are Leaves for the execution tree. All Method Results are collected and compared *after all the methods have been executed for a given round*; a **ResultCollection** is the terminal object for a given **Round**.
-* We do not control the MethodExecution environment. This will generally be triggered by renku's usage of `toil`, and ultimately by the assigned capacity to the gitlab runner.
+  * Only validated methods qualify for participation in a given **Round**. Validation means that the method meets the criteria above. If possible, we want to validate constraints before even running the method.
+* These executions have a given order (they're a Direct Acyclical Graph). Data origins are Initial Objects. Each method branches the Data Transformation. Method Results are Leaves for the execution tree. All Method Results are collected and compared *after all the methods have been executed for a given round*; a **ResultCollection** is the terminal object for a given **Round** (*from the Data Flow perspective*).
+* We do not control the **MethodExecution** environment. This will generally be triggered by renku's usage of `toil`, and ultimately by the assigned capacity to the GitLab runner.
 * The **Knowledge Graph** is a triple store where information about each ModuleExecution is captured. This Knowledge Graph is controlled by the **Benchmark Curators**.
 
 ## Problem Statements
