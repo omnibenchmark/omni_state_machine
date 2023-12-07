@@ -186,7 +186,7 @@ In this section I want to capture what are the current design constrains, what p
 - OP4: Can we store snapshots of artifacts for posterity? whose (agent) responsibility is this?
 - OP5: Can we trim down the base images? (and perhaps avoid dependency hacks in the templates)
 
-## Architectural ideas
+## Architectural ideas (and attempts to answer my own questions)
 
 ### For CP1
 
@@ -194,6 +194,22 @@ In this section I want to capture what are the current design constrains, what p
 - We could use something similar to gitlab/github CI definition, declaring "steps".
 - Valid steps: data, filter, method, collection.
 - One such idea is that the orchestrator declares the **constrains** (ReferenceDataset), the canonical ParameterSet, and points to a service where external methods can register themselves as candidates for a round.
+
+### For CP2
+
+I think the answer is *yes, if it's not too hard / doesn't need too many changes*.
+
+### For CP3
+
+Is this needed? For simplicity I would avoid in a first iteration
+
+### For CP4
+
+I think only **BenchmarkCurators** (and their environment, by delegation) should have write access to repo. A possibility I see is that each method generates triples as artifacts, and then collector would only have to move these artifacts around (perhaps snapshot them, see OP4).
+
+### For OP1
+
+Need more data/examples. I would avoid polluting the Knowledge Graph with too many tuples. 
 
 ### For OP2
 
@@ -203,6 +219,18 @@ In this section I want to capture what are the current design constrains, what p
   - Orchestrator triggers dataset, parameter set
   - Orchestrator announces round open (perhaps webhook ping to receiver?)
   - Orchestrator clearly announces time-to-end (so that methods can avoid running if end is close)
+ 
+### For OP3
+
+I think this depends on our position towards CP2. For an Open World, we basically need a way to notify the registry the *intention* to participate in a Round. If validated, then each module can be autonomous in publishing results - but we need to make sure they're executed in *comparable* environments (this can be solved by making a shared runner accessible for participants).
+
+### For OP4
+
+Yes, I think this is the Collectors responsibility.
+
+### For OP5
+
+What do we minimally need? Is it just renku? (i.e., no fancy UIs?)
   
 
 ## Notes
