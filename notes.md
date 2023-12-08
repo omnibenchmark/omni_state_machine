@@ -28,3 +28,24 @@ image_build:
 ```
 
 what's the rationale of this build?
+
+
+# Doubts re. metrics
+
+Afaik, this is not automatic right?
+
+Does this mean the benchmark maintainers need to write custom metric for each method??
+https://gitlab.renkulab.io/omnibenchmark/iris_example/iris-accuracy/-/blob/master/src/run_iris-accuracy.R
+
+In this metric_res, what's the hash?
+https://gitlab.renkulab.io/omnibenchmark/iris_example/irirs-summary-metrics/-/blob/master/data/iris-accuracy-pval/iris-accuracy-pval_iris_random_forest_d4afa__metric_res.json
+
+Where is this grid generated?
+https://gitlab.renkulab.io/omnibenchmark/iris_example/irirs-summary-metrics/-/blob/master/data/irirs-summary-metrics/irirs-summary-metrics.json
+
+what other parameter logic (other than a combinatorial grid) are expected in more complicated methods?
+
+
+what is the entrypoint for the summary execution?
+
+https://gitlab.renkulab.io/omnibenchmark/iris_example/irirs-summary-metrics/-/tree/master/src
