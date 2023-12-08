@@ -61,7 +61,6 @@ def state_machine_from_graph(g: DiGraph):
                 return True
             else:
                 _next = _next[0]
-                print("next:", _next)
                 transition = (f"{self.state}_to_{_next}")
                 fn = getattr(self, transition)
                 return fn()
