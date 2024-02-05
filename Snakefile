@@ -9,18 +9,9 @@
 from snakemake import rules
 import os.path as op
 
+include: op.join('src', 'workflow_helpers.py')
+
 configfile: op.join('data', 'minibenchmark.yaml')
-
-def get_benchmark_definition():
-    return(config)
-
-def get_benchmark_stages():
-    return(config['stages'])
-
-def get_modules_by_stage(stage):
-    for st in config['stages'].keys():
-        if st == stage:
-             return(config['stages'][st]['members'])
 
 print(get_benchmark_definition())
 

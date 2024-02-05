@@ -15,6 +15,30 @@ stages:
       - name: cars
         repo: omnibenchmark/mini/cars
     outputs:
-      - counts: data/${name}/${stage}/${reponame}/${name}.txt.gz
-      - meta: data/${name}/${stage}/${reponame}/${name}.meta.json
-      - data_specific_params: data/${name}/${stage}/${reponame}/${name}_params.txt
+      - counts: output/{name}/{stage}/{reponame}/{name}.txt.gz
+      - meta: output/{name}/{stage}/{reponame}/{name}.meta.json
+      - data_specific_params: output/{name}/{stage}/{reponame}/{name}_params.txt
+  1_preprocess:
+    after: 0_data
+    members:
+      - name: log_transform
+        repo: omnibenchmark/test/log
+        parameters:
+          - offset:
+              - 1
+              - 2
+          - log_base:
+              - 2
+              - e
+              - 10
+        exclude:
+          - cars
+      - name: sqrt_transform
+        repo: omnibenchmark/test/sqrt
+    inputs:
+      - counts: output/{name}/0_output/{reponame}/{name}.txt.gz
+        meta: output/{name}/0_output/{reponame}/{name}.txt.gz
+    outputs:
+      - filtered: output/{name}/{stage}/{reponame}/{name}.txt.gz
+
+
