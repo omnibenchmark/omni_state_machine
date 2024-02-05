@@ -1,0 +1,20 @@
+---
+name: minibenchmark
+description: a small benchmark
+version: 0.01
+gitlab: https://gitlab.renkulab.io/
+orchestrator:
+  name: mini_orchestrator
+  url: omnibenchmark/mini/orchestrator
+stages:
+  0_data:
+    initial: true
+    members:
+      - name: iris
+        repo: omnibenchmark/mini/iris
+      - name: cars
+        repo: omnibenchmark/mini/cars
+    outputs:
+      - counts: data/${name}/${stage}/${reponame}/${name}.txt.gz
+      - meta: data/${name}/${stage}/${reponame}/${name}.meta.json
+      - data_specific_params: data/${name}/${stage}/${reponame}/${name}_params.txt

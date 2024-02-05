@@ -1,1 +1,9 @@
-# omni_state_machine
+# omnibenchmark workflow
+
+Powered by Snakemake
+
+# How to
+
+- `make install` to install dependencies
+- `make activate` to activate the environment with the dependencies (pipenv shell)
+- `make benchmark` to run the benchmark (= trigger the Snakefile)
