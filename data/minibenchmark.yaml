@@ -15,9 +15,9 @@ stages:
       - name: cars
         repo: omnibenchmark/mini/cars
     outputs:
-      - counts: output/{name}/{stage}/{reponame}/{name}.txt.gz
-      - meta: output/{name}/{stage}/{reponame}/{name}.meta.json
-      - data_specific_params: output/{name}/{stage}/{reponame}/{name}_params.txt
+      - counts: data/{stage}/{name}/{reponame}/{name}.txt.gz
+      - meta: data/{stage}/{name}/{reponame}/{name}.meta.json
+      - data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
   1_preprocess:
     after: 0_data
     members:
@@ -36,9 +36,38 @@ stages:
       - name: sqrt_transform
         repo: omnibenchmark/test/sqrt
     inputs:
-      - counts: output/{name}/0_output/{reponame}/{name}.txt.gz
-        meta: output/{name}/0_output/{reponame}/{name}.txt.gz
+      - counts: data/0_data/{name}/{reponame}/{name}.txt.gz
+        meta: data/0_data/{name}/{reponame}/{name}.meta.json
     outputs:
-      - filtered: output/{name}/{stage}/{reponame}/{name}.txt.gz
-
-
+      - filtered: output/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.txt.gz
+  2_model:
+    after: 1_preprocess
+    members:
+      - name: linear
+        repo: omnibenchmark/test/lm
+        parameters:
+          - fast: false
+      - name: glm
+        repo: omnibenchmark/test/glm
+    inputs:
+      - counts: data/0_data/{name}/{reponame}/{name}.txt.gz
+        meta: data/0_data/{name}/{reponame}/{name}.meta.json
+        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
+      - filtered: output/1_preprocess/{name}/{reponame}/{params_and_identifiers}/{name}.txt.gz
+        meta: data/0_data/{name}/{reponame}/{name}.meta.json
+        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
+    outputs:
+      - mapping: data/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.model.out.gz
+  3_metrics:
+    after: 2_model
+    terminal: true
+    members:
+      - name: ari
+        repo: omnibenchmark/test/ari
+    inputs:
+      - mapping: data/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.model.out.gz
+        meta: data/0_data/{name}/{reponame}/{name}.meta.json
+        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
+validator:
+  name: test_validator
+  url: omnibenchmark/test/test_validator
