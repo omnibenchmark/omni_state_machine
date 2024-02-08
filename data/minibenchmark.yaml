@@ -1,73 +1,77 @@
 ---
-name: minibenchmark
-description: a small benchmark
-version: 0.01
-gitlab: https://gitlab.renkulab.io/
+name: starts_to_be_explicit
+description: simple benchmark, somewhat explicit, simple params
+platform: https://gitlab.renkulab.io/
 orchestrator:
-  name: mini_orchestrator
-  url: omnibenchmark/mini/orchestrator
-stages:
-  0_data:
+  name: orchestrator
+  url: https://gitlab.renkulab.io/omnibenchmark/test/orchestrator
+steps:
+  data:
     initial: true
     members:
-      - name: iris
-        repo: omnibenchmark/mini/iris
-      - name: cars
-        repo: omnibenchmark/mini/cars
+      - name: D1
+        repo: omnibenchmark/test/D1
+      - name: D2
+        repo: omnibenchmark/test/D2
     outputs:
-      - counts: data/{stage}/{name}/{reponame}/{name}.txt.gz
-      - meta: data/{stage}/{name}/{reponame}/{name}.meta.json
-      - data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
-  1_preprocess:
-    after: 0_data
+      - counts: "{stage}/{module}/{params}/{name}.txt.gz"
+      - meta: "{stage}/{module}/{params}/{name}.meta.json"
+      - data_specific_params: "{stage}/{module}/{params}/{name}_params.txt"
+  process:
+    after:
+      - data
     members:
-      - name: log_transform
-        repo: omnibenchmark/test/log
+      - name: P1
+        repo: omnibenchmark/test/P1
         parameters:
-          - offset:
-              - 1
-              - 2
-          - log_base:
-              - 2
-              - e
-              - 10
+          - -a 0, -b 0.1
+          - -a 1 -b 0.1
+      - name: P2
+        repo: omnibenchmark/test/P2
+        parameters:
+          - -a 0 -c 0
+          - -a 1 -c 0.1
+    inputs:
+      - counts: data
+        meta: data
+    outputs:
+      - filtered: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+  methods:
+    after:
+      - process
+    members:
+      - name: M1
+        repo: benchmark/test/M1
+        exclude: D2
+      - name: M2
+        repo: omnibenchmark/test/M2
+        parameters:
+          - -d1 -e1
+          - -d1 -e 2
         exclude:
-          - cars
-      - name: sqrt_transform
-        repo: omnibenchmark/test/sqrt
+          - D1
+          - D2
     inputs:
-      - counts: data/0_data/{name}/{reponame}/{name}.txt.gz
-        meta: data/0_data/{name}/{reponame}/{name}.meta.json
+      - counts: data
+        meta: data
+        data_specific_params: data
+      - filtered: process
+        meta: data
+        data_specific_params: data
     outputs:
-      - filtered: output/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.txt.gz
-  2_model:
-    after: 1_preprocess
-    members:
-      - name: linear
-        repo: omnibenchmark/test/lm
-        parameters:
-          - fast: false
-      - name: glm
-        repo: omnibenchmark/test/glm
-    inputs:
-      - counts: data/0_data/{name}/{reponame}/{name}.txt.gz
-        meta: data/0_data/{name}/{reponame}/{name}.meta.json
-        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
-      - filtered: output/1_preprocess/{name}/{reponame}/{params_and_identifiers}/{name}.txt.gz
-        meta: data/0_data/{name}/{reponame}/{name}.meta.json
-        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
-    outputs:
-      - mapping: data/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.model.out.gz
-  3_metrics:
-    after: 2_model
+      - mapping: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+  metrics:
+    after:
+      - methods
     terminal: true
     members:
-      - name: ari
-        repo: omnibenchmark/test/ari
+      - name: m1
+        repo: omnibenchmark/test/m1
+      - name: m2
+        repo: omnibenchmark/test/m2
+      - name: m3
+        repo: omnibenchmark/test/m3
     inputs:
-      - mapping: data/{stage}/{name}/{reponame}/{params_and_identifiers}/{name}.model.out.gz
-        meta: data/0_data/{name}/{reponame}/{name}.meta.json
-        data_specific_params: data/{stage}/{name}/{reponame}/{name}_params.txt
-validator:
-  name: test_validator
-  url: omnibenchmark/test/test_validator
+      - mapping: model
+        meta: data
+        data_specific_params: data
