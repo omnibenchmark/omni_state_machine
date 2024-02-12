@@ -7,6 +7,7 @@
 ## Izaskun Mallona
 
 import dag
+import os.path as op
 
 def get_benchmark_definition():
     return(config)
@@ -17,7 +18,7 @@ def get_benchmark_stages():
 def get_modules_by_stage(stage):
     for st in config['stages'].keys():
         if st == stage:
-             return(config['stages'][st]['members'])
+             return([x['name'] for x in config['stages'][st]['members']])
 
 def clone_repo(module_name):
     return('todo')
@@ -26,14 +27,14 @@ def get_module_parameters(stage, module):
     params = None
     for member in config['stages'][stage]['members']:
         if member['name'] is module and 'parameters' in member.keys():
-            params = [stage, member, member['parameters']]
+            params = member['parameters']
     return(params)
 
 def get_module_excludes(stage, module):
     excludes = None
     for member in config['stages'][stage]['members']:
         if member['name'] is module and 'exclude' in member.keys():
-            excludes = [stage, member, member['exclude']]
+            excludes = member['exclude']
     return(excludes)
 
 def get_stage_implicit_inputs(stage):
@@ -53,20 +54,24 @@ def get_stage_explicit_inputs(stage):
     if implicit is not None:
         i = 0
         while i < len(implicit):
-            for key in implicit[i].keys():                
-                in_stage =  implicit[i][key]
-                in_deliverable = key
+            for in_deliverable in implicit[i].keys():                
+                in_stage =  implicit[i][in_deliverable]
 
                 # beware stage needs to be substituted
                 curr_output = get_stage_outputs(stage = in_stage)[in_deliverable]
      
-                explicit[i][key] = curr_output
+                explicit[i][in_deliverable] = curr_output
             i = i + 1
 
     return(explicit)
 
 ## needs to expand by (initial) dataset names
-def create_rule_for_module(rule_name, stage_name, module_name):
+def create_rule_for_module(input_path, stage, module):
+
+    ei = get_stage_explicit_inputs(stage) # to extract the dirnames from
+    eo = get_stage_outputs(stage)
+    params = get_module_parameters(stage, module)
+    
     for i in range(len(config['stages'][stage_name]['members'])):
         if config['stages'][stage_name]['members'][i]['name'] == rule_name:
             curr = config['stages'][stage_name]['members'][i]
@@ -82,9 +87,10 @@ def create_rule_for_module(rule_name, stage_name, module_name):
     if not config['stages']['stage'].initial:
         input_fns = config['stages']['1_preprocess']['inputs']
 
-    return Rule(
-        name = rule_name,
-        input = input(input_fns),
-        output = output(output_fn),
-        shell = command
-    )
+    # return Rule(
+    #     name = rule_name,
+    #     input = input(input_fns),
+    #     output = output(output_fn),
+    #     shell = command
+    # )
+    return('todo')
