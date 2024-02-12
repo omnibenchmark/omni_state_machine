@@ -22,9 +22,48 @@ def get_modules_by_stage(stage):
 def clone_repo(module_name):
     return('todo')
 
-def get_parameters_by_module(module):
-    return('todo')
+def get_module_parameters(stage, module):
+    params = None
+    for member in config['stages'][stage]['members']:
+        if member['name'] is module and 'parameters' in member.keys():
+            params = [stage, member, member['parameters']]
+    return(params)
 
+def get_module_excludes(stage, module):
+    excludes = None
+    for member in config['stages'][stage]['members']:
+        if member['name'] is module and 'exclude' in member.keys():
+            excludes = [stage, member, member['exclude']]
+    return(excludes)
+
+def get_stage_implicit_inputs(stage):
+    if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
+        return(None)
+    return(config['stages'][stage]['inputs'])
+
+def get_stage_outputs(stage):
+     if 'terminal' in config['stages'][stage].keys() and config['stages'][stage]['terminal']:
+         return(None)
+     L = config['stages'][stage]['outputs']
+     return(dict(pair for d in L for pair in d.items()))
+
+def get_stage_explicit_inputs(stage):
+    implicit = get_stage_implicit_inputs(stage)
+    explicit = implicit
+    if implicit is not None:
+        i = 0
+        while i < len(implicit):
+            for key in implicit[i].keys():                
+                in_stage =  implicit[i][key]
+                in_deliverable = key
+
+                # beware stage needs to be substituted
+                curr_output = get_stage_outputs(stage = in_stage)[in_deliverable]
+     
+                explicit[i][key] = curr_output
+            i = i + 1
+
+    return(explicit)
 
 ## needs to expand by (initial) dataset names
 def create_rule_for_module(rule_name, stage_name, module_name):

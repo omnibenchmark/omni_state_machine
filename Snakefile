@@ -17,7 +17,13 @@ print(get_benchmark_definition())
 
 print("\nStages are:")
 for stage in get_benchmark_stages():
-    print('  ', stage, 'with modules', get_modules_by_stage(stage), '\n')
+    print(stage)
+    # print('  ', stage, 'with modules', get_modules_by_stage(stage), '\n')
+    print('ii', get_stage_implicit_inputs(stage))
+    print('o', get_stage_outputs(stage))
+    print('ei', get_stage_explicit_inputs(stage))
+    print('------')
+    
 
 rule all:
     input:

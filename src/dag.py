@@ -12,10 +12,10 @@ def build_dag_from_definition(filename):
     data = yaml.safe_load(file)
 
   g = nx.DiGraph()
-  for step in data['steps'].keys():
+  for step in data['stages'].keys():
     g.add_node(step)
 
-  for step, definition in data['steps'].items():
+  for step, definition in data['stages'].items():
     if definition.get('after', None):
        for dep in definition['after']:
            g.add_edge(dep, step)

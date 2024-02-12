@@ -72,6 +72,6 @@ stages:
       - name: m3
         repo: omnibenchmark/test/m3
     inputs:
-      - mapping: model
+      - mapping: methods
         meta: data
         data_specific_params: data
