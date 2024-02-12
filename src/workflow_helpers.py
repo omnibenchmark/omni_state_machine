@@ -6,6 +6,8 @@
 ##
 ## Izaskun Mallona
 
+import dag
+
 def get_benchmark_definition():
     return(config)
 
@@ -19,6 +21,10 @@ def get_modules_by_stage(stage):
 
 def clone_repo(module_name):
     return('todo')
+
+def get_parameters_by_module(module):
+    return('todo')
+
 
 ## needs to expand by (initial) dataset names
 def create_rule_for_module(rule_name, stage_name, module_name):

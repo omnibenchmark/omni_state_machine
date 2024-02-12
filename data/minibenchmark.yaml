@@ -5,7 +5,7 @@ platform: https://gitlab.renkulab.io/
 orchestrator:
   name: orchestrator
   url: https://gitlab.renkulab.io/omnibenchmark/test/orchestrator
-steps:
+stages:
   data:
     initial: true
     members:

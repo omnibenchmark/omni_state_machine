@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 snakemake = "==8.4.3"
+networkx = "*"
+matplotlib = "*"
 
 [dev-packages]
 
