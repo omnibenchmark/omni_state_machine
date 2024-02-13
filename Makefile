@@ -5,3 +5,5 @@ activate:
 	pipenv shell
 benchmark:
 	snakemake -p --cores 1
+dry:
+	snakemake -p --cores 1 -n -p
