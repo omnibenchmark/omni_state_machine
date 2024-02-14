@@ -11,12 +11,13 @@ stages:
     members:
       - name: D1
         repo: omnibenchmark/test/D1
+        example: true
       - name: D2
         repo: omnibenchmark/test/D2
     outputs:
-      - counts: "{stage}/{mod}/{params}/{mod}.txt.gz"
-      - meta: "{stage}/{mod}/{params}/{mod}.meta.json"
-      - data_specific_params: "{stage}/{mod}/{params}/{mod}_params.txt"
+      - counts: "{stage}/{mod}/{params}/{id}.txt.gz"
+      - meta: "{stage}/{mod}/{params}/{id}.meta.json"
+      - data_specific_params: "{stage}/{mod}/{params}/{id}_params.txt"
   process:
     after:
       - data

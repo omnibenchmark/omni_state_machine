@@ -6,4 +6,4 @@ activate:
 benchmark:
 	snakemake -p --cores 1
 dry:
-	snakemake -p --cores 1 -n -p
+	snakemake -p --cores 1 -n -p -F

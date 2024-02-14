@@ -30,48 +30,89 @@ for stage in get_benchmark_stages():
         print('    Params:',  get_module_parameters(stage, module))
     print('------')
 
-# print(get_initial_datasets())
-# print(get_stage_output_filenames('data'))
 
-rule all:
-    input:
-        expand(get_stage_output_filenames('data'),
-               stage = 'data',
-               mod = get_initial_datasets(),
-               params = 'default')
 
 ## seed the benchmark with datasets
 
 stages = get_benchmark_stages()
 datasets = get_initial_datasets()
+# print('initial datasets', get_initial_datasets())
 
-print('datasets are', datasets)
+# seed_datasets = get_stage_output_filenames(stage = 'data', dataset = 'D1')
 
-for stage in stages:
-    if is_initial(stage):
-        # o = get_stage_output_filenames(stage)
-        o = expand("{stage}/{mod}/{params}/{stage}.txt.gz",
-                   params = 'default',
-                   stage = 'data',
-                   mod = get_initial_datasets())
-        
-        for mod in get_modules_by_stage(stage):
-            rule:
-                name: f"{stage}_{mod}"
-                output: o
-                shell:
-                    """
-                    mkdir -p {wildcards.stage}/{wildcards.mod}/{wildcards.params}
+print(list(get_stage_outputs('data').values()))
+print('D1 will contain', get_initial_dataset_paths('D1'))
+print('D2 will contain', get_initial_dataset_paths('D2'))
 
-                    echo {wildcards.stage} and {wildcards.mod} > \
-                      {wildcards.stage}/{wildcards.mod}/{wildcards.params}/{wildcards.stage}.txt.gz
- 
-                    """
-# checkpoint initial_nodes:
-#     output:
-#         # lambda wildcards: get_stage_output_filenames(wildcards.stage)
-#         directory()
-#     run:
-#         fake_something_to_do(wildcards.stage, wildcards.module)
-    
-        
+datasets = get_initial_datasets()
+for dataset in datasets:
+    dpaths = get_initial_dataset_paths(dataset)
+    for dpath in dpaths:
+        if not op.exists(op.dirname(dpath)):
+            os.makedirs(op.dirname(dpath))
+
+rule all:
+    input:
+        op.join('log', 'system_profiling.txt'),
+        [get_initial_dataset_paths(x) for x in get_initial_datasets()],
+        expand(op.join('log', "{id}.txt"), id = get_initial_datasets())
+
+rule start_benchmark:
+    output:
+        seed = op.join('log', 'system_profiling.txt')
+    shell:
+        """
+        echo '---------------' > {output.seed}
+        echo 'DATE' >> {output.seed}
+        date >> {output.seed}
+        echo '\nOS' >> {output.seed}
+        uname -a >> {output.seed}
+        echo '\nnproc' >> {output.seed}
+        nproc >> {output.seed}
+        echo '\ncgroups' >> {output.seed}
+        ## to detect docker runs
+        cat /proc/1/cgroup >> {output.seed}        
+        """
+
+
+## not tested yet
+# wildcard_constraints:
+#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
+
+## this is an awful lot of hardcoding
+for dataset in datasets:
+    print(dataset)
+    rule:
+        name: f"{dataset}".format(dataset = dataset)
+        input:
+            op.join('log', 'system_profiling.txt')
+        output:
+            a = f"{{stage}}/{{mod}}/{{params}}/{{id}}.txt.gz".format(stage = 'data',
+                                                                 params = 'default',
+                                                                 mod = dataset,
+                                                                 id = dataset),
+            b = f"{{stage}}/{{mod}}/{{params}}/{{id}}_params.txt".format(stage = 'data',
+                                                                     params = 'default',
+                                                                     mod = dataset,
+                                                                     id = dataset),
+            c = f"{{stage}}/{{mod}}/{{params}}/{{id}}.meta.json".format(stage = 'data',
+                                                                     params = 'default',
+                                                                     mod = dataset,
+                                                                     id = dataset)
+        shell:
+            """
+            echo no wildcards here Im afraid! > {output.a}
+            echo {wildcards} > {output.b}
+            echo {wildcards} > {output.c}
+              
+            """
+
+rule wildcard_awareness:
+    input:
+        [get_initial_dataset_paths(x) for x in get_initial_datasets()]
+    output:
+        op.join('log', "{id}.txt")
+    shell:
+        """
+        echo {wildcards} > {output} ## only id
+        """

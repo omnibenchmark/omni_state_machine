@@ -93,57 +93,16 @@ def get_initial_datasets():
             return(get_modules_by_stage(stage))
 
 
-## dirty start ------
+## dirty seeding attempts start ----------
 
-## filenaming start
+def get_initial_dataset_paths(dataset):
+    # module_ids = get_initial_datasets()
+    filled = []
+    for stage in config['stages'].keys():
+        if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
+             outs = list(get_stage_outputs(stage).values())
+    for i in range(len(outs)):
+        filled.append([outs[i].format(stage = 'data', mod = dataset, params = 'default', id = dataset)])
+             
+    return(sum(filled, []))
 
-
-def get_stage_output_filenames(stage):
-    o = get_stage_outputs(stage)
-    return(o.values())
-
-# def get_stage_explicit_input
-
-## filenaming end
-
-# start benchmark start
-
-
-
-            
-            
-
-
-# start benchmark end
-
-# ## needs to expand by (initial) dataset names
-# def create_rule_for_module(stage, module):
-
-#     ## if initial module
-#     if is_initial(stage):
-#         dyn_rule = create_initial_rule(stage, module)
-#     elif is_terminal(stage):
-#         dyn_rule = create_terminal_rule(stage, module)
-#     else:
-#         dyn_rule = create_mid_rule(stage, module)
-
-#     # return Rule(
-#     #     name = rule_name,
-#     #     input = input(input_fns),
-#     #     output = output(output_fn),
-#     #     shell = command
-#     # )
-#     return(dyn_rule)
-
-# def create_initial_rule(stage, module, cmd = 'echo hello world'):
-#     # ei = get_stage_explicit_inputs(stage) # to extract the dirnames from
-#     # de = get_stage_explicit_input_dirnames(stage)
-#     eo = get_stage_outputs(stage).values()
-#     print(eo)
-#     params = get_module_parameters(stage, module)
-
-#     r =  Rule(
-#         name = f"stage_{stage}_module_{mod}",
-#         output = output(eo),
-#         shell = cmd
-#     )
