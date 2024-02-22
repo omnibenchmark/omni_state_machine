@@ -32,7 +32,7 @@ for stage in get_benchmark_stages():
 
 ## benchmark seeding (datasets and wildcard generation) ##############################################
 
-# print(list(get_stage_outputs('data').values()))
+# print(list(get_stage_outputs('out').values()))
 # print('D1 will contain', get_initial_dataset_paths('D1'))
 # print('D2 will contain', get_initial_dataset_paths('D2'))
 
@@ -46,9 +46,8 @@ for dataset in datasets:
 rule all:
     input:
         op.join('log', 'done.txt'),
-        # op.join('log', "{stage}_{module}_{params}_{id}_another.txt")
-        op.join('log', 'methods_M1_default_D1_another.txt'),
-         op.join('log', 'methods_M2_default_D1_another.txt')
+        op.join('out', 'methods', 'M1', 'default', 'methods_M1_default_D1_another.txt'),
+        op.join('out', 'methods', 'M2', 'default', 'methods_M2_default_D1_another.txt')
 
 rule start_benchmark:
     output:
@@ -84,17 +83,6 @@ for dataset in datasets:
 
 ## wildcards propagation ###############################################################################
 
-# rule wildcard_awareness:
-#     input:
-#         [get_initial_dataset_paths(x) for x in get_initial_datasets()]
-#     output:
-#         op.join('log', "{stage}_{params}_{id}.txt")
-#     shell:
-#         """
-#         echo {wildcards} > {output}
-#         """
-
-
 for stage in get_benchmark_stages():
     for module in get_modules_by_stage(stage):
         write_module_flag_for_dirty_module_wildcards(module)
@@ -104,32 +92,32 @@ for stage in get_benchmark_stages():
 
         rule:
             name: f"{module}_flagger".format(module = module)
-            output: f"{module}.flag".format(module = module)
+            output: temp(op.join('out', f"{module}.flag".format(module = module)))
             script: write_module_flag_for_dirty_module_wildcards(module)
                 
         rule:
-            # name: f"{stage}_{module}".format(stage = stage, module = module)
-            name: 'module_maker'
+            name: 'flat_module_maker' # not hierarchical/nested yet
             input:
-                # op.join('log', "{stage}_{params}_{id}.txt"),
-                op.join('data', "{module}.flag")
+                op.join('out', "{module}.flag")
             output:
-                op.join('log', "{stage}_{module}_{params}_{id}_another.txt")
+                op.join('out', "{stage}", "{module}", "{params}",
+                        "{stage}_{module}_{params}_{id}_another.txt")
+            params:
+                test = 'empty',
+                another = 'empty too'
             threads: 2
             script:
                 op.join('src', 'do_something.py')
 
-        
-## sandbox
-## not tested yet
-# wildcard_constraints:
-#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
-
 rule done:
     input:
-        expand(op.join('data', "{module}.flag"), module = get_modules())  
+        expand(op.join('out', "{module}.flag"), module = get_modules())  
     output:
         op.join('log', 'done.txt')
     shell:
         "date > {output}"
         
+## sandbox
+## not tested yet
+# wildcard_constraints:
+#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])

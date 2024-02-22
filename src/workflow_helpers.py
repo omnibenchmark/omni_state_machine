@@ -104,15 +104,21 @@ def get_initial_dataset_paths(dataset):
         if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
              outs = list(get_stage_outputs(stage).values())
     for i in range(len(outs)):
-        filled.append([outs[i].format(stage = 'data', mod = dataset, params = 'default', id = dataset)])
+        filled.append([outs[i].format(stage = 'out', mod = dataset, params = 'default', id = dataset)])
              
     return(sum(filled, []))
 
+# dirty, fix
 def write_module_flag_for_dirty_module_wildcards(module):
     ## creates an empty file
-    open(op.join('data', f"{module}.flag".format(module = module)), 'a')
+    open(op.join('out', f"{module}.flag".format(module = module)), 'a')
         
 
-def parameter_tokenizer():
+def tokenize_parameters():
     print('todo')
 
+def exclude_items_from_explicit_outputs():
+    print('todo')
+    
+def nest_deliverable_paths():
+    print('todo')
