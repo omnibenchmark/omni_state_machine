@@ -8,6 +8,7 @@
 
 # import dag
 import os.path as op
+import sys
 
 def clone_repo(module_name):
     return('todo')
@@ -22,6 +23,12 @@ def get_modules_by_stage(stage):
     for st in config['stages'].keys():
         if st == stage:
              return([x['name'] for x in config['stages'][st]['members']])
+
+def get_modules():
+    m = []
+    for st in config['stages'].keys():
+        m.append([x['name'] for x in config['stages'][st]['members']])
+    return(sum(m, []))
 
 def get_module_parameters(stage, module):
     params = None
@@ -100,3 +107,12 @@ def get_initial_dataset_paths(dataset):
         filled.append([outs[i].format(stage = 'data', mod = dataset, params = 'default', id = dataset)])
              
     return(sum(filled, []))
+
+def write_module_flag_for_dirty_module_wildcards(module):
+    ## creates an empty file
+    open(op.join('data', f"{module}.flag".format(module = module)), 'a')
+        
+
+def parameter_tokenizer():
+    print('todo')
+
