@@ -98,7 +98,7 @@ for stage in get_benchmark_stages():
         rule:
             name: 'flat_module_maker' # not hierarchical/nested yet
             input:
-                op.join('out', "{module}.flag")
+                flag = op.join('out', "{module}.flag")
             output:
                 op.join('out', "{stage}", "{module}", "{params}",
                         "{stage}_{module}_{params}_{id}_another.txt")

@@ -8,6 +8,7 @@
 
 # import dag
 import os.path as op
+import os
 import sys
 
 def clone_repo(module_name):
@@ -108,6 +109,9 @@ def get_initial_dataset_paths(dataset):
              
     return(sum(filled, []))
 
+
+## playground -------------
+
 # dirty, fix
 def write_module_flag_for_dirty_module_wildcards(module):
     ## creates an empty file
@@ -117,8 +121,33 @@ def write_module_flag_for_dirty_module_wildcards(module):
 def tokenize_parameters():
     print('todo')
 
-def exclude_items_from_explicit_outputs():
-    print('todo')
+def count_path_depth(path):
+    return(path.count(os.sep))
+
+## if a module (stage) gets inputs from different modules, i.e. counts from 'processed' after 'raw'
+##   and 'meta' from raw, then we have to nest outputs after the longest (deepest) folder -
+##   that is, raw/processed/here, and not to raw/here
+def get_deepest_input_dirname(stage):
+    i = get_stage_explicit_inputs(stage)
+    deepest_input = '.'
+    if i is not None:
+        deepest_input_depth = 0
+        for item in i.keys():
+            curr_depth = count_path_depth(i[item])
+            if curr_depth > deepest_input_depth:
+                deepest_input_depth = curr_depth
+                deepest_input = op.dirname(i[item])
+    return('this breaks because explicit inputs are lists - raw vs processed; iterate instead')
+
+
+## with substituted module/stage/ids    
+def fill_explicit_outputs(stage, module):
+    i = get_stage_explicit_outputs(stage)
+    idir = get_deepest_input_dirname(stage)
     
-def nest_deliverable_paths():
-    print('todo')
+    oe = get_stage_outputs(stage)
+    excludes = get_module_excludes(stage = stage, module = module)
+    return('todo')
+    
+def nest_deliverable_path(parent, path):
+    return(op.join(parent, path))
