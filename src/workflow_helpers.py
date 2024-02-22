@@ -6,7 +6,7 @@
 ##
 ## Izaskun Mallona
 
-import dag
+# import dag
 import os.path as op
 
 def clone_repo(module_name):
@@ -87,16 +87,11 @@ def is_terminal(stage):
         return(False)
 
 def get_initial_datasets():
-    # datasets = []
     for stage in get_benchmark_stages():
         if is_initial(stage):
             return(get_modules_by_stage(stage))
 
-
-## dirty seeding attempts start ----------
-
 def get_initial_dataset_paths(dataset):
-    # module_ids = get_initial_datasets()
     filled = []
     for stage in config['stages'].keys():
         if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
@@ -105,4 +100,3 @@ def get_initial_dataset_paths(dataset):
         filled.append([outs[i].format(stage = 'data', mod = dataset, params = 'default', id = dataset)])
              
     return(sum(filled, []))
-

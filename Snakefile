@@ -30,15 +30,7 @@ for stage in get_benchmark_stages():
         print('    Params:',  get_module_parameters(stage, module))
     print('------')
 
-
-
-## seed the benchmark with datasets
-
-stages = get_benchmark_stages()
-datasets = get_initial_datasets()
-# print('initial datasets', get_initial_datasets())
-
-# seed_datasets = get_stage_output_filenames(stage = 'data', dataset = 'D1')
+## benchmark seeding (datasets and wildcard generation) ##############################################
 
 print(list(get_stage_outputs('data').values()))
 print('D1 will contain', get_initial_dataset_paths('D1'))
@@ -53,9 +45,10 @@ for dataset in datasets:
 
 rule all:
     input:
-        op.join('log', 'system_profiling.txt'),
-        [get_initial_dataset_paths(x) for x in get_initial_datasets()],
-        expand(op.join('log', "{id}.txt"), id = get_initial_datasets())
+        expand(op.join('log', "{stage}_{params}_{id}.txt"),
+               id = get_initial_datasets(),
+               stage = 'data',
+               params = 'default')
 
 rule start_benchmark:
     output:
@@ -74,12 +67,6 @@ rule start_benchmark:
         cat /proc/1/cgroup >> {output.seed}        
         """
 
-
-## not tested yet
-# wildcard_constraints:
-#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
-
-## this is an awful lot of hardcoding
 for dataset in datasets:
     print(dataset)
     rule:
@@ -87,32 +74,27 @@ for dataset in datasets:
         input:
             op.join('log', 'system_profiling.txt')
         output:
-            a = f"{{stage}}/{{mod}}/{{params}}/{{id}}.txt.gz".format(stage = 'data',
-                                                                 params = 'default',
-                                                                 mod = dataset,
-                                                                 id = dataset),
-            b = f"{{stage}}/{{mod}}/{{params}}/{{id}}_params.txt".format(stage = 'data',
-                                                                     params = 'default',
-                                                                     mod = dataset,
-                                                                     id = dataset),
-            c = f"{{stage}}/{{mod}}/{{params}}/{{id}}.meta.json".format(stage = 'data',
-                                                                     params = 'default',
-                                                                     mod = dataset,
-                                                                     id = dataset)
+            get_initial_dataset_paths(dataset)
         shell:
             """
-            echo no wildcards here Im afraid! > {output.a}
-            echo {wildcards} > {output.b}
-            echo {wildcards} > {output.c}
-              
+            echo no wildcards here Im afraid! > {output[0]}
+            echo {wildcards} > {output[1]}
+            echo {wildcards} > {output[2]}
             """
+
+## wildcards propagation ###############################################################################
 
 rule wildcard_awareness:
     input:
         [get_initial_dataset_paths(x) for x in get_initial_datasets()]
     output:
-        op.join('log', "{id}.txt")
+        op.join('log', "{stage}_{params}_{id}.txt")
     shell:
         """
-        echo {wildcards} > {output} ## only id
+        echo {wildcards} > {output}
         """
+
+## sandbox
+## not tested yet
+# wildcard_constraints:
+#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
