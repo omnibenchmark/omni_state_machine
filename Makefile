@@ -7,3 +7,5 @@ benchmark:
 	snakemake -p --cores 1
 dry:
 	snakemake -p --cores 1 -n -p -F
+clean:
+	rm -rf ./out ./log

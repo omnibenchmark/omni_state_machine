@@ -50,13 +50,19 @@ def get_stage_implicit_inputs(stage):
         return(None)
     return(config['stages'][stage]['inputs'])
 
-def get_stage_outputs(stage):
+def get_stage_output_dict(stage):
      if 'terminal' in config['stages'][stage].keys() and config['stages'][stage]['terminal']:
          return(None)
      L = config['stages'][stage]['outputs']
-     return(dict(pair for d in L for pair in d.items()))
+     return(L)
 
+def get_stage_outputs(stage):
+    if 'terminal' in config['stages'][stage].keys() and config['stages'][stage]['terminal']:
+        return(None)
+    L = config['stages'][stage]['outputs']
+    return(dict(pair for d in L for pair in d.items()))
 
+ 
 def get_stage_explicit_inputs(stage):
     implicit = get_stage_implicit_inputs(stage)
     explicit = implicit
@@ -128,17 +134,20 @@ def count_path_depth(path):
 ##   and 'meta' from raw, then we have to nest outputs after the longest (deepest) folder -
 ##   that is, raw/processed/here, and not to raw/here
 def get_deepest_input_dirname(stage):
-    i = get_stage_explicit_inputs(stage)
-    deepest_input = '.'
-    if i is not None:
+    ii = get_stage_implicit_inputs(stage)
+    deepest_inputs = []
+    if ii is not None:
+        deepest_input = '.'
         deepest_input_depth = 0
-        for item in i.keys():
-            curr_depth = count_path_depth(i[item])
-            if curr_depth > deepest_input_depth:
-                deepest_input_depth = curr_depth
-                deepest_input = op.dirname(i[item])
-    return('this breaks because explicit inputs are lists - raw vs processed; iterate instead')
-
+        for input_dict in ii:
+            for item in input_dict.keys():
+                curr_depth = count_path_depth(input_dict[item])
+                if curr_depth > deepest_input_depth:
+                    deepest_input_depth = curr_depth
+                    deepest_input = op.dirname(input_dict[item])
+                    deepest_inputs.append(deepest_input)
+    
+    return(deepest_inputs)
 
 ## with substituted module/stage/ids    
 def fill_explicit_outputs(stage, module):
@@ -151,3 +160,12 @@ def fill_explicit_outputs(stage, module):
     
 def nest_deliverable_path(parent, path):
     return(op.join(parent, path))
+
+## using the input identifiers, excludes and parameters and not 'after' clauses        
+def traverse_yaml():
+    lookup = ''
+    for stage in get_benchmark_stages():
+        for module in get_modules_by_stage(stage):
+            ii = get_stage_implicit_inputs(stage)
+    return(todo)
+            

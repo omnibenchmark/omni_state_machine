@@ -30,6 +30,7 @@ for stage in get_benchmark_stages():
         print('    Params:',  get_module_parameters(stage, module))
     print('------')
 
+
 ## benchmark seeding (datasets and wildcard generation) ##############################################
 
 # print(list(get_stage_outputs('out').values()))
@@ -116,8 +117,70 @@ rule done:
         op.join('log', 'done.txt')
     shell:
         "date > {output}"
-        
-## sandbox
+
+
+
+
+
+
+
+## sandbox ------------------------------------------------------------------------------
 ## not tested yet
 # wildcard_constraints:
 #     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
+
+
+silence_sandbox = True
+if silence_sandbox:
+    sys.stdout = open(os.devnull, "w")
+    sys.stderr = open(os.devnull, "w")
+
+### sandbox start
+print('--------------------------------------------------------here')
+
+# print(get_deepest_input_dirname('methods'))
+# print(get_deepest_input_dirname('metrics'))
+
+
+# building a lookup dict tag (format, i.e. 'counts'): deliverables (full paths)
+#
+# print(get_stage_output_dict('data'))
+## tp stands for template
+lookup = dict()
+for stage in get_benchmark_stages():
+    print(stage)
+    if is_initial(stage):
+        o_tps = get_stage_output_dict(stage)
+        for o_tp in o_tps:
+            for module in get_modules_by_stage(stage):            
+                for output_key in o_tp.keys():
+                    lookup.update({output_key : o_tp[output_key].format(mod = module,
+                                                                              stage = stage,
+                                                                              params = 'default',
+                                                                              id = module)})
+    elif is_terminal(stage):
+        ## todo update
+        pass
+    else:
+        ## implicit means explicit - not intuitive at all
+        i_tps = get_stage_implicit_inputs(stage)
+        o_tps = get_stage_outputs(stage)        
+        print('inputs are', i_tps)
+        print('outputs are', o_tps)
+        for i_tp in i_tps:
+            excl = get_module_excludes(stage, module)
+            for module in list(set(modules) - set(excl)):
+                print('here')
+    print(lookup)
+            
+    # else:
+    #     for module in get_modules_by_stage(stage):
+    #         ii = get_stage_implicit_inputs(stage)
+    #         print(ii.keys())
+    #         print(ii.values())
+
+
+print('--------------------------------------------------------here')
+
+
+### sandbox end

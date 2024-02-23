@@ -8,6 +8,7 @@ Powered by Snakemake
 - `make activate` to activate the environment with the dependencies (pipenv shell)
 - `make benchmark` to run the benchmark (= trigger the Snakefile)
 - `make dry` to dry run the benchmark (= dry run the Snakefile)
+- `make clean` deletes the `./out` and `./log` output folders
 
 # Rationale
 
