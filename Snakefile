@@ -49,10 +49,17 @@ for dataset in datasets:
 rule all:
     input:
         op.join('log', 'done.txt'),
-        # op.join('out', 'methods', 'M1', 'default', 'methods_M1_default_D1_another.txt'),
-        # op.join('out', 'methods', 'M2', 'default', 'methods_M2_default_D1_another.txt'),
-        'out/data/D1/default/D1.txt',
-        'out/data/D2/default/process/P2/default/methods/M2/default/metrics/m2/default/D1.txt'
+        expand('{pre}/{stage}/m2/{params}/{id}.txt',
+               pre = 'wild/data/D1/default/process/P2/default/methods/M2/default',
+               stage = 'metrics',
+               params = 'default',
+               id = 'D1'),
+        expand('{pre}/{stage}/P1/{params}/{id}.txt',
+               pre = 'wild/data/D2/default/',
+               stage = 'process',
+               params = 'default',
+               id = 'D2')
+               
 
 rule start_benchmark:
     output:
@@ -124,52 +131,28 @@ rule done:
         "date > {output}"
 
 
-## attempt to nest it
-
-root = op.join('out')
+## nest outputs/inputs based on `pre` (input_dir) wildcards
 for stage in get_benchmark_stages():
-    print('stage is', stage, 'and root is', root)
+    print('stage is', stage)
     for module in get_modules_by_stage(stage):
         if is_initial(stage):
             pass
     
-        print('processing stage', stage, 'module', module)
-        # ei = get_stage_implicit_inputs(stage)
-        # eo = get_stage_outputs(stage)
-        path = op.join(root, f"{{stage}}/{{mod}}/{{params}}/{{id}}.txt".format(
-            root = 'data',
-            stage = stage,
-            mod = module,
-            params = 'default',
-            id = 'D1'))
-        print('path is', path)
-        
+        print('processing stage (nested)', stage, 'module', module)
+
         rule:
-            name: f"{{module}}_nested".format(module = module)
-            output: path
+            wildcard_constraints:
+                # pre = '(.*\/.*)+',
+                stage = '|'.join([re.escape(x) for x in get_benchmark_stages()]),
+                params = "default",
+                id = '|'.join([re.escape(x) for x in datasets])
+            name: f"{{module}}_nested_wild".format(module = module)
+            output:
+                "{{pre}}/{{stage}}/{module}/{{params}}/{{id}}.txt".format(module = module)
             params:
-                path = op.dirname(path)
+                path =  "{{pre}}/{{stage}}/{module}/{{params}}".format(module = module)
             shell:
                 """
                 mkdir -p {params.path}
                 echo "{wildcards}" > {output}
                 """
-    root = op.join(root, stage, module, 'default')
-
-                
-# ## assumes stages are ordered
-
-# datasets = []
-
-# print(get_initial_dataset_paths(dataset))
-
-# for stage in get_benchmark_stages():
-#     for module in get_modules_by_stage(stage):
-#         write_module_flag_for_dirty_module_wildcards(module)
-
-#         print(module, '----------------------------')
-#         # iis = get_stage_implicit_inputs(stage)
-#         iis = get_stage_implicit_inputs(stage)
-#         eo = get_stage_outputs(stage)
-
-  
