@@ -125,6 +125,9 @@ rule done:
 
 
 ## sandbox ------------------------------------------------------------------------------
+## this is absurd, go for wildcard constrainst instead
+
+
 ## not tested yet
 # wildcard_constraints:
 #     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
@@ -136,8 +139,6 @@ if silence_sandbox:
     sys.stderr = open(os.devnull, "w")
 
 ### sandbox start
-print('--------------------------------------------------------here')
-
 # print(get_deepest_input_dirname('methods'))
 # print(get_deepest_input_dirname('metrics'))
 
@@ -147,17 +148,25 @@ print('--------------------------------------------------------here')
 # print(get_stage_output_dict('data'))
 ## tp stands for template
 lookup = dict()
+datasets = []
+
+print(lookup)
+
 for stage in get_benchmark_stages():
     print(stage)
+    modules = get_modules_by_stage(stage)
+    
     if is_initial(stage):
         o_tps = get_stage_output_dict(stage)
         for o_tp in o_tps:
-            for module in get_modules_by_stage(stage):            
+            for module in modules:            
                 for output_key in o_tp.keys():
                     lookup.update({output_key : o_tp[output_key].format(mod = module,
                                                                               stage = stage,
                                                                               params = 'default',
                                                                               id = module)})
+                    if module not in datasets:
+                        datasets.append(module) 
     elif is_terminal(stage):
         ## todo update
         pass
@@ -165,22 +174,39 @@ for stage in get_benchmark_stages():
         ## implicit means explicit - not intuitive at all
         i_tps = get_stage_implicit_inputs(stage)
         o_tps = get_stage_outputs(stage)        
-        print('inputs are', i_tps)
-        print('outputs are', o_tps)
-        for i_tp in i_tps:
+        # print('inputs are', i_tps)
+        # print('outputs are', o_tps)
+        for module in modules:
             excl = get_module_excludes(stage, module)
-            for module in list(set(modules) - set(excl)):
-                print('here')
-    print(lookup)
+            if excl is not None:
+                valid_datasets = list(set(datasets) - set(excl))
+            else:
+                valid_datasets = datasets
+            print('valid datasets are', valid_datasets)
+      
+            for i_tp in i_tps:
+                # print('itp is', i_tp)
+                longest_input_basename_t = get_deepest_input_dirname_for_input_dict(i_tp)
+                print('itp was', i_tp)
+                print('longest input is', longest_input_basename_t)
+                print('excl is', excl)
+                # substitute input fstring and get basename
+
+                lookup.update({output_key : o_tp[output_key].format(mod = module,
+                                                                    stage = stage,
+                                                                    params = 'default',
+                                                                    id = module)})
+                
+                # substitute output fstring with input basename and other components
+                #append to the lookup dict
+    # print('datasets are', datasets)
+    # print('lookup is', lookup)
             
     # else:
     #     for module in get_modules_by_stage(stage):
     #         ii = get_stage_implicit_inputs(stage)
     #         print(ii.keys())
     #         print(ii.values())
-
-
-print('--------------------------------------------------------here')
 
 
 ### sandbox end

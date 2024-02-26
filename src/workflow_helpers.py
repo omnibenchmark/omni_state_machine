@@ -149,6 +149,17 @@ def get_deepest_input_dirname(stage):
     
     return(deepest_inputs)
 
+def get_deepest_input_dirname_for_input_dict(input_dict):
+    if input_dict is not None:
+        deepest_input = '.'
+        deepest_input_depth = 0
+        for item in input_dict.keys():
+            curr_depth = count_path_depth(input_dict[item])
+            if curr_depth > deepest_input_depth:
+                deepest_input_depth = curr_depth
+                deepest_input = op.dirname(input_dict[item])
+    return(deepest_input)
+
 ## with substituted module/stage/ids    
 def fill_explicit_outputs(stage, module):
     i = get_stage_explicit_outputs(stage)
