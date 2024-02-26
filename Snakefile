@@ -6,6 +6,7 @@
 ##
 ## Izaskun Mallona
 
+
 from snakemake import rules
 import os.path as op
 
@@ -38,6 +39,7 @@ for stage in get_benchmark_stages():
 # print('D2 will contain', get_initial_dataset_paths('D2'))
 
 datasets = get_initial_datasets()
+
 for dataset in datasets:
     dpaths = get_initial_dataset_paths(dataset)
     for dpath in dpaths:
@@ -47,8 +49,10 @@ for dataset in datasets:
 rule all:
     input:
         op.join('log', 'done.txt'),
-        op.join('out', 'methods', 'M1', 'default', 'methods_M1_default_D1_another.txt'),
-        op.join('out', 'methods', 'M2', 'default', 'methods_M2_default_D1_another.txt')
+        # op.join('out', 'methods', 'M1', 'default', 'methods_M1_default_D1_another.txt'),
+        # op.join('out', 'methods', 'M2', 'default', 'methods_M2_default_D1_another.txt'),
+        'out/data/D1/default/D1.txt',
+        'out/data/D2/default/process/P2/default/methods/M2/default/metrics/m2/default/D1.txt'
 
 rule start_benchmark:
     output:
@@ -110,6 +114,7 @@ for stage in get_benchmark_stages():
             script:
                 op.join('src', 'do_something.py')
 
+
 rule done:
     input:
         expand(op.join('out', "{module}.flag"), module = get_modules())  
@@ -119,94 +124,52 @@ rule done:
         "date > {output}"
 
 
+## attempt to nest it
 
-
-
-
-
-## sandbox ------------------------------------------------------------------------------
-## this is absurd, go for wildcard constrainst instead
-
-
-## not tested yet
-# wildcard_constraints:
-#     dataset='/'.join([re.escape(x) for x in get_initial_datasets()])
-
-
-silence_sandbox = True
-if silence_sandbox:
-    sys.stdout = open(os.devnull, "w")
-    sys.stderr = open(os.devnull, "w")
-
-### sandbox start
-# print(get_deepest_input_dirname('methods'))
-# print(get_deepest_input_dirname('metrics'))
-
-
-# building a lookup dict tag (format, i.e. 'counts'): deliverables (full paths)
-#
-# print(get_stage_output_dict('data'))
-## tp stands for template
-lookup = dict()
-datasets = []
-
-print(lookup)
-
+root = op.join('out')
 for stage in get_benchmark_stages():
-    print(stage)
-    modules = get_modules_by_stage(stage)
+    print('stage is', stage, 'and root is', root)
+    for module in get_modules_by_stage(stage):
+        if is_initial(stage):
+            pass
     
-    if is_initial(stage):
-        o_tps = get_stage_output_dict(stage)
-        for o_tp in o_tps:
-            for module in modules:            
-                for output_key in o_tp.keys():
-                    lookup.update({output_key : o_tp[output_key].format(mod = module,
-                                                                              stage = stage,
-                                                                              params = 'default',
-                                                                              id = module)})
-                    if module not in datasets:
-                        datasets.append(module) 
-    elif is_terminal(stage):
-        ## todo update
-        pass
-    else:
-        ## implicit means explicit - not intuitive at all
-        i_tps = get_stage_implicit_inputs(stage)
-        o_tps = get_stage_outputs(stage)        
-        # print('inputs are', i_tps)
-        # print('outputs are', o_tps)
-        for module in modules:
-            excl = get_module_excludes(stage, module)
-            if excl is not None:
-                valid_datasets = list(set(datasets) - set(excl))
-            else:
-                valid_datasets = datasets
-            print('valid datasets are', valid_datasets)
-      
-            for i_tp in i_tps:
-                # print('itp is', i_tp)
-                longest_input_basename_t = get_deepest_input_dirname_for_input_dict(i_tp)
-                print('itp was', i_tp)
-                print('longest input is', longest_input_basename_t)
-                print('excl is', excl)
-                # substitute input fstring and get basename
+        print('processing stage', stage, 'module', module)
+        # ei = get_stage_implicit_inputs(stage)
+        # eo = get_stage_outputs(stage)
+        path = op.join(root, f"{{stage}}/{{mod}}/{{params}}/{{id}}.txt".format(
+            root = 'data',
+            stage = stage,
+            mod = module,
+            params = 'default',
+            id = 'D1'))
+        print('path is', path)
+        
+        rule:
+            name: f"{{module}}_nested".format(module = module)
+            output: path
+            params:
+                path = op.dirname(path)
+            shell:
+                """
+                mkdir -p {params.path}
+                echo "{wildcards}" > {output}
+                """
+    root = op.join(root, stage, module, 'default')
 
-                lookup.update({output_key : o_tp[output_key].format(mod = module,
-                                                                    stage = stage,
-                                                                    params = 'default',
-                                                                    id = module)})
                 
-                # substitute output fstring with input basename and other components
-                #append to the lookup dict
-    # print('datasets are', datasets)
-    # print('lookup is', lookup)
-            
-    # else:
-    #     for module in get_modules_by_stage(stage):
-    #         ii = get_stage_implicit_inputs(stage)
-    #         print(ii.keys())
-    #         print(ii.values())
+# ## assumes stages are ordered
 
+# datasets = []
 
-### sandbox end
+# print(get_initial_dataset_paths(dataset))
+
+# for stage in get_benchmark_stages():
+#     for module in get_modules_by_stage(stage):
+#         write_module_flag_for_dirty_module_wildcards(module)
+
+#         print(module, '----------------------------')
+#         # iis = get_stage_implicit_inputs(stage)
+#         iis = get_stage_implicit_inputs(stage)
+#         eo = get_stage_outputs(stage)
+
+  

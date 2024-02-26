@@ -120,7 +120,7 @@ def get_initial_dataset_paths(dataset):
 
 # dirty, fix
 def write_module_flag_for_dirty_module_wildcards(module):
-    ## creates an empty file
+    ## creates an empty file    
     open(op.join('out', f"{module}.flag".format(module = module)), 'a')
         
 
@@ -149,10 +149,10 @@ def get_deepest_input_dirname(stage):
     
     return(deepest_inputs)
 
-def get_deepest_input_dirname_for_input_dict(input_dict):
-    if input_dict is not None:
-        deepest_input = '.'
-        deepest_input_depth = 0
+def get_deepest_input_dirname_for_input_dict(input_dict_list):
+    deepest_input = '.'
+    deepest_input_depth = 0
+    for input_dict in input_dict_list:
         for item in input_dict.keys():
             curr_depth = count_path_depth(input_dict[item])
             if curr_depth > deepest_input_depth:
