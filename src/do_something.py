@@ -17,10 +17,10 @@ def do_something(in_dict, out_fn, params_dict, threads):
     print('  scriptdir is', snakemake.scriptdir)
     print('  params are', snakemake.params)
 
-if not os.path.exists(snakemake.params['path']):
-    os.makedirs(snakemake.params['path'])
-
 for out in snakemake.output:
+    if not os.path.exists(os.path.dirname(out)):
+        os.makedirs(os.path.dirname(out))
+    
     with open(out, 'w') as sys.stdout:
         do_something(in_dict = snakemake.input,
                      out_fn = out,

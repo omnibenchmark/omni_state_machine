@@ -169,14 +169,14 @@ def get_deepest_input_dirname_for_input_dict(input_dict_list):
                 deepest_input = op.dirname(input_dict[item])
     return(deepest_input)
 
-## with substituted module/stage/ids    
-def fill_explicit_outputs(stage, module):
-    i = get_stage_explicit_outputs(stage)
-    idir = get_deepest_input_dirname(stage)
+# ## with substituted module/stage/ids    
+# def fill_explicit_outputs(stage, module):
+#     i = get_stage_explicit_outputs(stage)
+#     idir = get_deepest_input_dirname(stage)
     
-    oe = get_stage_outputs(stage)
-    excludes = get_module_excludes(stage = stage, module = module)
-    return('todo')
+#     oe = get_stage_outputs(stage)
+#     excludes = get_module_excludes(stage = stage, module = module)
+#     return('todo')
     
 def nest_deliverable_path(parent, path):
     return(op.join(parent, path))
@@ -187,5 +187,40 @@ def traverse_yaml():
     for stage in get_benchmark_stages():
         for module in get_modules_by_stage(stage):
             ii = get_stage_implicit_inputs(stage)
-    return(todo)
-            
+    return('todo')
+
+## f-strings: rule maker
+## wildcards: output mapper (only params, currently)
+# def format_dataset_templates_to_be_expanded(dataset):
+#     filled = []
+#     for stage in config['stages'].keys():
+#         if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
+#              outs = list(get_stage_outputs(stage).values())
+#              for i in range(len(outs)):
+#                  filled.append([outs[i].format(stage = stage, mod = dataset, params = '{params}', id = dataset)])
+             
+#     return(sum(filled, []))
+def format_dataset_templates_to_be_expanded(dataset):
+    filled = []
+    for stage in config['stages'].keys():
+        if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
+             outs = list(get_stage_outputs(stage).values())
+             for i in range(len(outs)):
+                 filled.append([outs[i].format(stage = stage, mod = '{dataset}', params = '{params}',
+                                               id = '{dataset}')])
+             
+    return(sum(filled, []))
+
+## f-strings: rule maker
+## wildcards (single curly bracket): expanded from the output mapper
+def format_output_templates_to_be_expanded(stage, module):
+    o = [x.format(input_dirname = '{pre}',
+                  stage = stage,
+                  mod = module,
+                  params = '{params}',
+                  id = '{id}') for x in get_stage_outputs(stage).values()]
+
+    return(o)
+
+def format_input_templates_to_be_expanded(stage, module):
+    return('todo')
