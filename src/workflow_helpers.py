@@ -105,23 +105,32 @@ def get_initial_datasets():
         if is_initial(stage):
             return(get_modules_by_stage(stage))
 
+def get_datasets():
+    return(get_initial_datasets())
+
+def get_initial_stage_name():
+    for stage in get_benchmark_stages():
+        if is_initial(stage):
+            return(stage)
+
 def get_initial_dataset_paths(dataset):
     filled = []
     for stage in config['stages'].keys():
         if 'initial' in config['stages'][stage].keys() and config['stages'][stage]['initial']:
              outs = list(get_stage_outputs(stage).values())
-    for i in range(len(outs)):
-        filled.append([outs[i].format(stage = 'out', mod = dataset, params = 'default', id = dataset)])
+             for i in range(len(outs)):
+                 filled.append([outs[i].format(stage = stage, mod = dataset, params = 'default', id = dataset)])
              
     return(sum(filled, []))
 
 
 ## playground -------------
 
-# dirty, fix
-def write_module_flag_for_dirty_module_wildcards(module):
-    ## creates an empty file    
-    open(op.join('out', f"{module}.flag".format(module = module)), 'a')
+# # dirty, fix
+# def write_module_flag_for_dirty_module_wildcards(module):
+#     stage = get_initial_stage_name()
+#     ## creates an empty file    
+#     open(op.join('out', stage,  f"{module}/{module}.flag".format(module = module)), 'a')
         
 
 def tokenize_parameters():

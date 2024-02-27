@@ -6,9 +6,19 @@
 ## Izaskun Mallona
 
 import sys
+import os
 
 def do_something(in_dict, out_fn, params_dict, threads):
-    print('Processed', in_dict, 'to', out_fn, 'using params', params_dict, 'and threads', threads, '.\n')
+    print('Processed', in_dict, 'to', out_fn, 'using params', params_dict, 'and threads', threads)
+    print('  bench_iteration is', snakemake.bench_iteration)
+    print('  resources are', snakemake.resources)
+    print('  wildcards are', snakemake.wildcards)
+    print('  rule is', snakemake.rule)
+    print('  scriptdir is', snakemake.scriptdir)
+    print('  params are', snakemake.params)
+
+if not os.path.exists(snakemake.params['path']):
+    os.makedirs(snakemake.params['path'])
 
 for out in snakemake.output:
     with open(out, 'w') as sys.stdout:

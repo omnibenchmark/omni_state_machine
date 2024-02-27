@@ -46,16 +46,17 @@ for dataset in datasets:
         if not op.exists(op.dirname(dpath)):
             os.makedirs(op.dirname(dpath))
 
+
 rule all:
     input:
-        op.join('log', 'done.txt'),
+        [get_initial_dataset_paths(x) for x in get_datasets()],
         expand('{pre}/{stage}/m2/{params}/{id}.txt',
-               pre = 'wild/data/D1/default/process/P2/default/methods/M2/default',
+               pre = 'out/data/D1/default/process/P2/default/methods/M2/default',
                stage = 'metrics',
                params = 'default',
                id = 'D1'),
         expand('{pre}/{stage}/P1/{params}/{id}.txt',
-               pre = 'wild/data/D2/default/',
+               pre = 'out/data/D2/default',
                stage = 'process',
                params = 'default',
                id = 'D2')
@@ -78,81 +79,95 @@ rule start_benchmark:
         cat /proc/1/cgroup >> {output.seed}        
         """
 
-for dataset in datasets:
-    print(dataset)
+# rule flow -  ------------------------------------------------------------------------------------------
+
+# start dynamic per-stage and per-module rule generator
+# for stage in stages:
+#     for module in modules:
+#         if initial:
+#             seed it
+#         if intermediate:
+#             get input templates, fstringed
+#             get output templates, fstringed
+#         if terminal:
+#             do nothing (now)
+# end
+
+
+## the output TEMPLATES should be parsed dynamically too, @todo
+for dataset in get_initial_datasets():
     rule:
-        name: f"{dataset}".format(dataset = dataset)
+        name: "{{dataset}}_materialize_dataset".format(dataset = dataset)
         input:
             op.join('log', 'system_profiling.txt')
         output:
-            get_initial_dataset_paths(dataset)
-        shell:
-            """
-            echo no wildcards here Im afraid! > {output[0]}
-            echo {wildcards} > {output[1]}
-            echo {wildcards} > {output[2]}
-            """
+            op.join('{{stage}}'.format(stage = get_initial_stage_name()),
+                    '{{dataset}}'.format(dataset = dataset),
+                    '{params}',
+                    '{{dataset}}.txt.gz'.format(dataset = dataset)),
+            op.join('{{stage}}'.format(stage = get_initial_stage_name()),
+                    '{{dataset}}'.format(dataset = dataset),
+                    '{params}',
+                    '{{dataset}}_params.txt'.format(dataset = dataset)),
+            op.join('{{stage}}'.format(stage = get_initial_stage_name()),
+                    '{{dataset}}'.format(dataset = dataset),
+                    '{params}',
+                    '{{dataset}}.meta.json'.format(dataset = dataset))
+        params:
+            path =  op.join('{{stage}}'.format(stage = get_initial_stage_name()),
+                            '{{dataset}}'.format(dataset = dataset),
+                            '{params}')
+        script:
+            op.join('src', 'do_something.py')
+        # shell:
+        #     """
+        #     mkdir -p {params.path}
+        #     echo " {wildcards}" > {output[0]}
+        #     echo " {wildcards}" > {output[1]}
+        #     echo " {wildcards}" > {output[2]}
+        #     """
+ 
 
-## wildcards propagation ###############################################################################
-
+## nested module runner, dynamicly getting input/outputs (paths)
 for stage in get_benchmark_stages():
-    for module in get_modules_by_stage(stage):
-        write_module_flag_for_dirty_module_wildcards(module)
-        
-        ei = get_stage_implicit_inputs(stage)
-        eo = get_stage_outputs(stage)
-
-        rule:
-            name: f"{module}_flagger".format(module = module)
-            output: temp(op.join('out', f"{module}.flag".format(module = module)))
-            script: write_module_flag_for_dirty_module_wildcards(module)
-                
-        rule:
-            name: 'flat_module_maker' # not hierarchical/nested yet
-            input:
-                flag = op.join('out', "{module}.flag")
-            output:
-                op.join('out', "{stage}", "{module}", "{params}",
-                        "{stage}_{module}_{params}_{id}_another.txt")
-            params:
-                test = 'empty',
-                another = 'empty too'
-            threads: 2
-            script:
-                op.join('src', 'do_something.py')
-
-
-rule done:
-    input:
-        expand(op.join('out', "{module}.flag"), module = get_modules())  
-    output:
-        op.join('log', 'done.txt')
-    shell:
-        "date > {output}"
-
-
-## nest outputs/inputs based on `pre` (input_dir) wildcards
-for stage in get_benchmark_stages():
-    print('stage is', stage)
     for module in get_modules_by_stage(stage):
         if is_initial(stage):
             pass
     
-        print('processing stage (nested)', stage, 'module', module)
-
         rule:
             wildcard_constraints:
                 # pre = '(.*\/.*)+',
                 stage = '|'.join([re.escape(x) for x in get_benchmark_stages()]),
                 params = "default",
                 id = '|'.join([re.escape(x) for x in datasets])
-            name: f"{{module}}_nested_wild".format(module = module)
+            name: f"{{module}}_run_module".format(module = module)
             output:
                 "{{pre}}/{{stage}}/{module}/{{params}}/{{id}}.txt".format(module = module)
             params:
                 path =  "{{pre}}/{{stage}}/{module}/{{params}}".format(module = module)
-            shell:
-                """
-                mkdir -p {params.path}
-                echo "{wildcards}" > {output}
-                """
+            # shell:
+            #     """
+            #     mkdir -p {params.path}
+            #     echo "{wildcards}" > {output}
+            #     """
+            script:
+                op.join("src", "do_something.py")
+
+# start dynamic gatherer generator
+# for stage in stages:
+#     if not initial nor terminal:
+#         for module in modules:
+#             get param ranges
+#             get excludes
+#             expand rules accordingly
+
+# rule 'all' start
+# for stage in stages:
+#     if stage is terminal:
+#         get inputs
+#         build rule with that
+# rule 'all' end
+# end
+
+print([get_initial_dataset_paths(x) for x in get_datasets()])
+
