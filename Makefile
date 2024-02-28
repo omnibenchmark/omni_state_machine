@@ -9,3 +9,5 @@ dry:
 	snakemake -p --cores 1 -n -p -F
 clean:
 	rm -rf ./out ./log ./data/D1 ./data/D2
+nb:
+	snakemake -p --cores 1 --edit-notebook out/interactive.txt

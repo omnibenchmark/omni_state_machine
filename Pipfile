@@ -5,8 +5,11 @@ name = "pypi"
 
 [packages]
 snakemake = "==8.4.3"
+dpath = "==2.1.6"
 networkx = "*"
 matplotlib = "*"
+jupyter = "*"
+"jupyterlab_server" = "*"
 
 [dev-packages]
 

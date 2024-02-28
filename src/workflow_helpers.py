@@ -10,6 +10,7 @@
 import os.path as op
 import os
 import sys
+import dpath
 
 def clone_repo(module_name):
     return('todo')
@@ -223,4 +224,17 @@ def format_output_templates_to_be_expanded(stage, module):
     return(o)
 
 def format_input_templates_to_be_expanded(stage, module):
-    return('todo')
+    filled = []
+
+    iis = get_stage_implicit_inputs(stage = stage)
+
+    ## each input dict is a dictionary
+    for ii in iis:
+        filled.append([x.format(
+            input_dirname = '{pre}',
+            stage = stage,
+            mod = module,
+            params = '{params}',
+        id = '{id}') for x in ii.values()])
+
+    return(filled)

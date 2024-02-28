@@ -9,6 +9,8 @@
 
 from snakemake import rules
 import os.path as op
+import dpath
+import json
 
 include: op.join('src', 'workflow_helpers.py')
 
@@ -120,3 +122,83 @@ for stage in get_benchmark_stages():
 #         build rule with that
 # rule 'all' end
 # end
+
+print(get_stage_implicit_inputs(stage = 'methods'))
+
+## mind stage is the previous stage, and module is the previous module
+print(format_input_templates_to_be_expanded(stage = 'metrics', module = 'M1'))
+# print(get_stage_explicit_inputs(stage = 'methods'))
+
+
+# traverse graph
+## dv stands for deliverables
+dvs = list()
+dv = dict()
+
+datasets = get_datasets()
+
+for stage in get_benchmark_stages():
+    for module in get_modules_by_stage(stage):
+        ii_list = get_stage_implicit_inputs(stage)
+        excludes = get_module_excludes(stage, module)
+        if excludes is None:
+            excludes = ''
+        outputs = get_stage_outputs(stage)
+        parameters = get_module_parameters(stage, module)
+        if parameters is None:
+            parameters = 'default'
+
+        if is_initial(stage):
+            id = module ## in this case, module names are dataset names
+            curr = [ x.format(stage = stage,
+                              mod = module,
+                              params = parameters,
+                              id = id) for x in outputs.values() ]
+            
+            bnames = [op.basename(x) for x in curr]
+            dname = list(set([op.dirname(x) for x in curr]))[0]
+            dpath.new(dv, dname, bnames)
+
+        elif not is_terminal(stage):
+            ## now intermediate steps are going to have {input_dir} stuffs:
+            parent = get_parent_stage(stage)
+            generation = get_parent_stage_rank(stage) ## how many stage/module/params the path has
+            print(generation)
+            for id in list(set(datasets) - set(excludes)):
+                glob_pattern = op.join(get_initial_stage_name(), id, '*')
+                            
+                curr = [ x.format(input_dirname = 'HERE',
+                                  stage = stage,
+                                  mod = module,
+                                  params = parameters,
+                                  id = id) for x in outputs.values() ]
+                
+                bnames = [op.basename(x) for x in curr]
+                parent_dirname = dpath.get(dv, glob_pattern)
+                print(parent_dirname)
+                dname = list(set([op.dirname(x) for x in curr]))
+                dpath.new(dv, dname, bnames)
+                    
+print('----')
+print(json.dumps(dv, indent = 4, sort_keys = True))
+
+
+# def get_deliverables_dictionary_depth(dv):
+#     return 1 + (max(map(get_deliverables_dictionary_depth, dv.values())) if dv else 0)
+
+# print(get_parent_stage('methods'))
+# print(get_deliverables_dictionary_depth(dv))
+
+
+# def cut_tree(d, depth = 1):
+#     i = 0
+#     for key, value in d.items():
+#         if (type(value) is dict):
+#             cut_tree(value, depth)
+#         else:
+#             raise(Exception('too deep'))
+#         if i == depth:
+#             break
+#     return([key, value])
+
+# cut_tree(dv, 0)
