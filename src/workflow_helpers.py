@@ -182,14 +182,6 @@ def get_deepest_input_dirname_for_input_dict(input_dict_list):
 def nest_deliverable_path(parent, path):
     return(op.join(parent, path))
 
-## using the input identifiers, excludes and parameters and not 'after' clauses        
-def traverse_yaml():
-    lookup = ''
-    for stage in get_benchmark_stages():
-        for module in get_modules_by_stage(stage):
-            ii = get_stage_implicit_inputs(stage)
-    return('todo')
-
 ## f-strings: rule maker
 ## wildcards: output mapper (only params, currently)
 # def format_dataset_templates_to_be_expanded(dataset):
@@ -238,3 +230,32 @@ def format_input_templates_to_be_expanded(stage, module):
         id = '{id}') for x in ii.values()])
 
     return(filled)
+
+def get_parent_stage_chains():
+    sorted = dict()
+    prev = '.' # get_initial_stage_name()
+    # dpath.new(sorted, '.', prev)
+
+    for st in get_benchmark_stages():
+        if is_initial(st):
+            pass
+        else:
+            curr = config['stages'][st]['after'][0]
+            # print(curr, prev)
+            dpath.new(sorted,  curr, prev)
+            prev =  curr
+    dpath.new(sorted,  st, prev)
+    return(sorted)
+
+def get_parent_stage(stage):
+    sorted = get_parent_stage_chains()
+    return(sorted[stage])
+
+## the order, being an initial node number 0
+def get_parent_stage_rank(stage):
+    sorted = get_parent_stage_chains()
+    for i in range(len(sorted.keys())):
+        if (list(sorted.keys())[i] == stage):
+            break
+        
+    return(i)
