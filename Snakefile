@@ -10,25 +10,31 @@
 from snakemake import rules
 import os.path as op
 
-include: op.join('src', 'workflow_helpers.py')
+include: 'snakemake.py'
 
-configfile: op.join('data', 'minibenchmark.yaml')
+configfile: op.join('data', 'Benchmark_001.yaml')
 
-print(get_benchmark_definition())
+print(converter.get_benchmark_definition())
 
-for stage in get_benchmark_stages():
-    print('Stage', stage)
+stages = converter.get_benchmark_stages()
+for stage_id in stages:
+    stage = stages[stage_id]
+    stage_name = stage['name']
+    print('Stage',stage_name)
 
-    print('  ', stage, 'with modules', get_modules_by_stage(stage), '\n')
-    print('  Implicit inputs:\n', get_stage_implicit_inputs(stage))
-    print('  Explicit inputs:\n', get_stage_explicit_inputs(stage))
-    print('  Outputs\n', get_stage_outputs(stage))
+    modules_in_stage = converter.get_modules_by_stage(stage)
+    print('  ',stage_name,'with modules',modules_in_stage.keys(),'\n')
+    print('  Implicit inputs:\n',converter.get_stage_implicit_inputs(stage))
+    print('  Explicit inputs:\n',converter.get_stage_explicit_inputs(stage))
+    print('  Outputs\n',converter.get_stage_outputs(stage))
     print('------')
 
-    for module in get_modules_by_stage(stage):
-        print('  Module', module)
-        print('    Excludes:', get_module_excludes(stage,  module))
-        print('    Params:',  get_module_parameters(stage, module))
+    for module_id in modules_in_stage:
+        mmodule = modules_in_stage[module_id]
+        module_name = mmodule['name']
+        print('  Module',module_name)
+        print('    Excludes:',converter.get_module_excludes(mmodule))
+        print('    Params:',converter.get_module_parameters(mmodule))
     print('------')
 
 
@@ -39,12 +45,12 @@ rule all:
                dataset = ['D1', 'D2'],
                params = 'default'),
         ## some intermediate steps outputs
-        expand('{pre}/{stage}/{module}/{params}/{id}.model.out.gz',
+        expand('{pre}/{stage}/{module}/{params}/{name}.model.out.gz',
                pre = 'out/data/D1/default/process/P2/default',
                stage = 'methods',
                params = 'default',
                module = ['M2', 'M1'],
-               id = ['D1', 'D2'])
+               name = ['D1', 'D2'])
                
 
 rule start_benchmark:
@@ -78,30 +84,34 @@ rule start_benchmark:
 #             do nothing (now)
 # end
 
-for dataset in get_initial_datasets():
+for dataset in converter.get_initial_datasets():
     rule:
         name: "materialize_dataset"#.format(dataset = dataset)
         input:
             op.join('log', 'system_profiling.txt')
         output:
-            format_dataset_templates_to_be_expanded(dataset)
+            converter.format_dataset_templates_to_be_expanded(dataset)
             # "data/{dataset}/{params}/{dataset}_params.txt"
         script:
             op.join('src', 'do_something.py')
 
 ## nested module runner, dynamicly getting input/outputs (paths)
-for stage in get_benchmark_stages():
-    for module in get_modules_by_stage(stage):        
-        if not is_initial(stage) and not is_terminal(stage):
+stages = converter.get_benchmark_stages()
+for stage_id in stages:
+    stage = stages[stage_id]
+
+    modules_in_stage = converter.get_modules_by_stage(stage)
+    for module_id in modules_in_stage:
+        if not converter.is_initial(stage) and not converter.is_terminal(stage):
             rule:
                 wildcard_constraints:
                     # pre = '(.*\/.*)+',
-                    stage = '|'.join([re.escape(x) for x in get_benchmark_stages()]),
+                    stage = '|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
                     # params = "default",
-                    id = '|'.join([re.escape(x) for x in get_initial_datasets()])
-                name: f"{{module}}_run_module".format(module = module)
+                    id = '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
+                name: f"{{module}}_run_module".format(module = module_id)
                 output:
-                    format_output_templates_to_be_expanded(stage = stage, module = module)
+                    converter.format_output_templates_to_be_expanded(stage = stage_id, module = module_id)
                 script:
                     op.join("src", "do_something.py")
 
