@@ -208,9 +208,8 @@ class YamlConverter(SnakemakeConverterTrait):
             stage = stages[stage_id]
             if 'initial' in stage.keys() and stage['initial']:
                 outs = list(self.get_stage_outputs(stage).values())
-                print(outs)
                 for i in range(len(outs)):
-                    filled.append([outs[i].format(stage=stage, module='{dataset}', params='{params}', name='{dataset}')])
+                    filled.append([outs[i].format(stage=stage_id, module='{dataset}', params='{params}', name='{dataset}')])
 
         return sum(filled, [])
 
@@ -223,7 +222,6 @@ class YamlConverter(SnakemakeConverterTrait):
                       params='{params}',
                       name='{id}') for x in self.get_stage_outputs(stage).values()]
 
-        print(o)
         return o
 
     def format_input_templates_to_be_expanded(self, stage, module):
