@@ -99,21 +99,6 @@ class YamlConverter(SnakemakeConverterTrait):
         else:
             return False
 
-    def get_initial_datasets(self):
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if self.is_initial(stage):
-                return self.get_modules_by_stage(stage)
-
-    def get_datasets(self):
-        return self.get_initial_datasets()
-
-    def get_initial_stage(self):
-        for (stage_name, stage) in self.get_benchmark_stages():
-            if self.is_initial(stage):
-                return stage
-
     def get_initial_dataset_paths(self, dataset):
         filled = []
         for stage in self.config['steps'].keys():
@@ -188,41 +173,4 @@ class YamlConverter(SnakemakeConverterTrait):
             for module in self.get_modules_by_stage(stage):
                 ii = self.get_stage_implicit_inputs(stage)
 
-        return 'todo'
-
-    ## f-strings: rule maker
-    ## wildcards: output mapper (only params, currently)
-    # def format_dataset_templates_to_be_expanded(dataset):
-    #     filled = []
-    #     for stage in self.config['steps'].keys():
-    #         if 'initial' in self.config['steps'][stage].keys() and self.config['steps'][stage]['initial']:
-    #              outs = list(get_stage_outputs(stage).values())
-    #              for i in range(len(outs)):
-    #                  filled.append([outs[i].format(stage = stage, mod = dataset, params = '{params}', id = dataset)])
-
-    #     return(sum(filled, []))
-    def format_dataset_templates_to_be_expanded(self, dataset):
-        filled = []
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if 'initial' in stage.keys() and stage['initial']:
-                outs = list(self.get_stage_outputs(stage).values())
-                for i in range(len(outs)):
-                    filled.append([outs[i].format(stage=stage_id, module='{dataset}', params='{params}', name='{dataset}')])
-
-        return sum(filled, [])
-
-    ## f-strings: rule maker
-    ## wildcards (single curly bracket): expanded from the output mapper
-    def format_output_templates_to_be_expanded(self, stage, module):
-        o = [x.format(input_dirname='{pre}',
-                      stage=stage,
-                      module=module,
-                      params='{params}',
-                      name='{id}') for x in self.get_stage_outputs(stage).values()]
-
-        return o
-
-    def format_input_templates_to_be_expanded(self, stage, module):
         return 'todo'

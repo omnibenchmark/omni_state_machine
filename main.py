@@ -1,11 +1,11 @@
 from src.helpers import *
-from src.converter import BenchmarkConverter, YamlConverter
+import src.formatter as fmt
+from src.converter import BenchmarkConverter
 
 
 if __name__ == "__main__":
-    config = load_yaml_file('data/Benchmark_001.yaml')
     benchmark = load_benchmark('data/Benchmark_001.yaml')
-    converter = YamlConverter(config)
+    converter = BenchmarkConverter(benchmark)
     print(converter.get_benchmark_definition())
 
     stages = converter.get_benchmark_stages()
@@ -28,4 +28,20 @@ if __name__ == "__main__":
             print('    Excludes:', converter.get_module_excludes(module))
             print('    Params:', converter.get_module_parameters(module))
         print('------')
+
+    for dataset in converter.get_initial_datasets():
+        result = fmt.format_dataset_templates_to_be_expanded(converter, dataset)
+        print(result)
+
+    print('------')
+    stages = converter.get_benchmark_stages()
+    for stage_id in stages:
+        stage = stages[stage_id]
+
+        modules_in_stage = converter.get_modules_by_stage(stage)
+        for module_id in modules_in_stage:
+            if not converter.is_initial(stage) and not converter.is_terminal(stage):
+                result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id, module_id=module_id)
+                print(result)
+
 

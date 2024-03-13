@@ -24,17 +24,17 @@ for stage_id in stages:
 
     modules_in_stage = converter.get_modules_by_stage(stage)
     print('  ',stage_name,'with modules',modules_in_stage.keys(),'\n')
-    print('  Implicit inputs:\n',converter.get_stage_implicit_inputs(stage))
-    print('  Explicit inputs:\n',converter.get_stage_explicit_inputs(stage))
-    print('  Outputs\n',converter.get_stage_outputs(stage))
+    print('  Implicit inputs:\n', converter.get_stage_implicit_inputs(stage))
+    print('  Explicit inputs:\n', converter.get_stage_explicit_inputs(stage))
+    print('  Outputs\n', converter.get_stage_outputs(stage))
     print('------')
 
     for module_id in modules_in_stage:
         mmodule = modules_in_stage[module_id]
         module_name = mmodule['name']
-        print('  Module',module_name)
-        print('    Excludes:',converter.get_module_excludes(mmodule))
-        print('    Params:',converter.get_module_parameters(mmodule))
+        print('  Module', module_name)
+        print('    Excludes:', converter.get_module_excludes(mmodule))
+        print('    Params:', converter.get_module_parameters(mmodule))
     print('------')
 
 
@@ -90,7 +90,7 @@ for dataset in converter.get_initial_datasets():
         input:
             op.join('log', 'system_profiling.txt')
         output:
-            converter.format_dataset_templates_to_be_expanded(dataset)
+            format_dataset_templates_to_be_expanded(dataset = dataset)
             # "data/{dataset}/{params}/{dataset}_params.txt"
         script:
             op.join('src', 'do_something.py')
@@ -111,7 +111,7 @@ for stage_id in stages:
                     id = '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
                 name: f"{{module}}_run_module".format(module = module_id)
                 output:
-                    converter.format_output_templates_to_be_expanded(stage = stage_id, module = module_id)
+                    format_output_templates_to_be_expanded(stage_id = stage_id, module_id = module_id)
                 script:
                     op.join("src", "do_something.py")
 
