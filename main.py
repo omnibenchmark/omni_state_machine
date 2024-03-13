@@ -1,5 +1,5 @@
-from src.helpers import *
 import src.formatter as fmt
+from src.dag import *
 from src.converter import BenchmarkConverter
 
 
@@ -44,4 +44,18 @@ if __name__ == "__main__":
                 result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id, module_id=module_id)
                 print(result)
 
+    G = build_dag_from_definition(converter)
+    plot_graph(G, output_file='output_dag.png', scale_factor=1.5, node_spacing=0.2)
+    initial_nodes, terminal_nodes = find_initial_and_terminal_nodes(G)
+
+    all_paths = set()
+    for initial_node in initial_nodes:
+        for terminal_node in terminal_nodes:
+            paths = list_all_paths(G, initial_node, terminal_node)
+
+            for path in paths:
+                paths = construct_output_paths(converter, prefix='out', nodes=path)
+                all_paths.update(paths)
+
+    print(all_paths)
 

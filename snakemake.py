@@ -1,10 +1,23 @@
 from src.converter import BenchmarkConverter
 from src.helpers import *
+import src.dag as dag
 import src.formatter as fmt
 
 
 benchmark = load_benchmark('data/Benchmark_001.yaml')
 converter = BenchmarkConverter(benchmark)
+G = dag.build_dag_from_definition(converter)
+initial_nodes, terminal_nodes = dag.find_initial_and_terminal_nodes(G)
+
+all_paths = set()
+for initial_node in initial_nodes:
+    for terminal_node in terminal_nodes:
+        paths = dag.list_all_paths(G, initial_node, terminal_node)
+
+        for path in paths:
+            paths = dag.construct_output_paths(converter, prefix='out', nodes=path)
+            all_paths.update(paths)
+
 
 def format_dataset_templates_to_be_expanded(dataset):
     return fmt.format_dataset_templates_to_be_expanded(converter, dataset)

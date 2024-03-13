@@ -1,0 +1,127 @@
+##
+##
+## Author btraven00
+## Source https://github.com/btraven00/runner-tinker/blob/bbcf3c83d3da200e2a206fbc0123f0d8ab6a1b19/bench.py
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from src.helpers import *
+
+
+class Node:
+    def __init__(self, stage_id, module_id, parameters):
+        self.stage_id = stage_id
+        self.module_id = module_id
+        self.parameters = parameters
+        self.param_id = "__".join([make_folder_name_safe(p) for p in parameters])
+
+    def __str__(self):
+        return f"Node({self.stage_id}, {self.module_id}, {self.param_id})"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other):
+        if isinstance(other, Node):
+            return (self.stage_id, self.module_id, self.parameters) == \
+                   (other.stage_id, other.module_id, other.parameters)
+        return False
+
+    def __hash__(self):
+        return hash((self.stage_id, self.module_id, self.param_id))
+
+
+def expend_stage_nodes(converter, stage_id, stage):
+    nodes = []
+    modules_in_stage = converter.get_modules_by_stage(stage)
+    for module_id in modules_in_stage:
+        module = modules_in_stage[module_id]
+        parameters = converter.get_module_parameters(module)
+        if not parameters or len(parameters) == 0:
+            parameters = [['default']]
+
+        parameters = [['default']]
+        for param in parameters:
+            node = Node(stage_id, module_id, param)
+            nodes.append(node)
+
+    return nodes
+
+
+def build_dag_from_definition(converter):
+    g = nx.DiGraph()
+    stages = converter.get_benchmark_stages()
+    for stage_id in stages:
+        stage = stages[stage_id]
+        nodes = expend_stage_nodes(converter, stage_id, stage)
+        g.add_nodes_from(nodes)
+
+    for stage_id in stages:
+        stage = stages[stage_id]
+        after_stage_ids = converter.get_after(stage)
+        if after_stage_ids and len(after_stage_ids) > 0:
+            for departure_stage_id in after_stage_ids:
+                departure_stage = stages[departure_stage_id]
+                departure_stage_nodes = expend_stage_nodes(converter, departure_stage_id, departure_stage)
+                current_stage_nodes = expend_stage_nodes(converter, stage_id, stage)
+
+                for departure_stage_node in departure_stage_nodes:
+                    for current_stage_node in current_stage_nodes:
+                        g.add_edge(departure_stage_node, current_stage_node)
+
+    return g
+
+
+def find_initial_and_terminal_nodes(graph):
+    initial_nodes = [node for node, in_degree in graph.in_degree() if in_degree == 0]
+    terminal_nodes = [node for node, out_degree in graph.out_degree() if out_degree == 0]
+    return initial_nodes, terminal_nodes
+
+
+def list_all_paths(graph, source, target):
+    all_paths = list(nx.all_simple_paths(graph, source=source, target=target))
+    return all_paths
+
+
+def construct_output_paths(converter, prefix, nodes):
+    if nodes is None or len(nodes) == 0:
+        return []
+    else:
+        head = nodes[0]
+        tail = nodes[1:]
+        paths = [x.format(input_dirname=prefix,
+                          stage=head.stage_id,
+                          module=head.module_id,
+                          params=head.param_id,
+                          name='{name}') for x in converter.get_stage_outputs(head.stage_id).values()]
+
+        current_path = f'{head.stage_id}/{head.module_id}/{head.param_id}'
+        new_prefix = f'{prefix}/{current_path}'
+
+        return paths + construct_output_paths(converter, new_prefix, tail)
+
+
+def format_output_templates_to_be_expanded(converter, pre, nodes):
+    o = [x.format(input_dirname='{pre}',
+                  stage=stage_id,
+                  module=module_id,
+                  params='{params}',
+                  name='{name}') for x in converter.get_stage_outputs(stage_id).values()]
+
+    return o
+
+def plot_graph(g, output_file, scale_factor=1.0, node_spacing=0.1, figure_size=(12, 12)):
+    layout = nx.circular_layout(g, scale=scale_factor)
+
+    plt.figure(figsize=figure_size)
+
+    nx.draw_networkx_edges(g, layout, edge_color='#AAAAAA')
+    nx.draw_networkx_nodes(g, layout, nodelist=g.nodes(), node_size=100, node_color='#fc8d62')
+    nodes = [node for node in g.nodes]
+    for l in layout:
+        layout[l][1] -= node_spacing
+
+    nx.draw_networkx_labels(g, layout, labels=dict(zip(nodes, nodes)), font_size=10)
+
+    # Save the figure to an image file
+    plt.savefig(output_file)

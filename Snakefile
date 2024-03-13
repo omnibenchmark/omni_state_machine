@@ -14,37 +14,8 @@ include: 'snakemake.py'
 
 configfile: op.join('data', 'Benchmark_001.yaml')
 
-print(converter.get_benchmark_definition())
-
-stages = converter.get_benchmark_stages()
-for stage_id in stages:
-    stage = stages[stage_id]
-    stage_name = stage['name']
-    print('Stage',stage_name)
-
-    modules_in_stage = converter.get_modules_by_stage(stage)
-    print('  ',stage_name,'with modules',modules_in_stage.keys(),'\n')
-    print('  Implicit inputs:\n', converter.get_stage_implicit_inputs(stage))
-    print('  Explicit inputs:\n', converter.get_stage_explicit_inputs(stage))
-    print('  Outputs\n', converter.get_stage_outputs(stage))
-    print('------')
-
-    for module_id in modules_in_stage:
-        mmodule = modules_in_stage[module_id]
-        module_name = mmodule['name']
-        print('  Module', module_name)
-        print('    Excludes:', converter.get_module_excludes(mmodule))
-        print('    Params:', converter.get_module_parameters(mmodule))
-    print('------')
-
-
 rule all:
     input:
-        ## some datasets (these are initial nodes)
-        expand('data/{dataset}/{params}/{dataset}_params.txt',
-               dataset = ['D1', 'D2'],
-               params = 'default'),
-        ## some intermediate steps outputs
         expand('{pre}/{stage}/{module}/{params}/{name}.model.out.gz',
                pre = 'out/data/D1/default/process/P2/default',
                stage = 'methods',
@@ -84,32 +55,50 @@ rule start_benchmark:
 #             do nothing (now)
 # end
 
-for dataset in converter.get_initial_datasets():
-    rule:
-        name: "materialize_dataset"#.format(dataset = dataset)
-        input:
-            op.join('log', 'system_profiling.txt')
-        output:
-            format_dataset_templates_to_be_expanded(dataset = dataset)
-            # "data/{dataset}/{params}/{dataset}_params.txt"
-        script:
-            op.join('src', 'do_something.py')
+# for dataset_id in converter.get_initial_datasets():
+#     rule:
+#         name: f"{{dataset}}_materialize".format(dataset = dataset_id)
+#         input:
+#             op.join('log', 'system_profiling.txt')
+#         output:
+#
+#             format_output_templates_to_be_expanded(stage_id = 'data', module_id = module_id)
+#             format_dataset_templates_to_be_expanded(dataset = dataset_id)
+#             # "out/data/{dataset}/{params}/{dataset}_params.txt"
+#         script:
+#             op.join('src', 'do_something.py')
 
-## nested module runner, dynamicly getting input/outputs (paths)
+
+## nested module runner, dynamically getting input/outputs (paths)
 stages = converter.get_benchmark_stages()
 for stage_id in stages:
     stage = stages[stage_id]
 
     modules_in_stage = converter.get_modules_by_stage(stage)
     for module_id in modules_in_stage:
-        if not converter.is_initial(stage) and not converter.is_terminal(stage):
+        if converter.is_initial(stage):
+            rule:
+                name: f"stage_{{stage}}_module_{{module}}_run".format(stage = stage_id, module = module_id)
+                input:
+                    op.join('log','system_profiling.txt')
+                wildcard_constraints:
+                    # pre = '(.*\/.*)+',
+                    stage='|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
+                    # params = "default",
+                    name='|'.join([re.escape(x) for x in converter.get_initial_datasets()])
+                output:
+                    format_output_templates_to_be_expanded(stage_id=stage_id,module_id=module_id)
+                    # "out/data/{dataset}/{params}/{dataset}_params.txt"
+                script:
+                    op.join('src','do_something.py')
+        if not converter.is_terminal(stage):
             rule:
                 wildcard_constraints:
                     # pre = '(.*\/.*)+',
                     stage = '|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
                     # params = "default",
-                    id = '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
-                name: f"{{module}}_run_module".format(module = module_id)
+                    name = '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
+                name: f"stage_{{stage}}_module_{{module}}_run".format(stage = stage_id, module = module_id)
                 output:
                     format_output_templates_to_be_expanded(stage_id = stage_id, module_id = module_id)
                 script:

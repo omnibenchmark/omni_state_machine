@@ -24,3 +24,10 @@ def merge_dict_list(list_of_dicts):
     return merged_dict
 
 
+def make_folder_name_safe(parameter_value):
+    # Replace unsafe characters with safe alternatives
+    safe_value = parameter_value.replace(" ", "_").replace(".", "_")
+
+    return safe_value
+
+

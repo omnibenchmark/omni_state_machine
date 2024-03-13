@@ -7,7 +7,7 @@ class SnakemakeConverterTrait:
     def get_benchmark_stages(self):
         raise NotImplementedError("Method not implemented yet")
 
-    def get_benchmark_stage(self):
+    def get_benchmark_stage(self, stage_id):
         raise NotImplementedError("Method not implemented yet")
 
     def get_modules_by_stage(self, stage):
@@ -32,6 +32,9 @@ class SnakemakeConverterTrait:
         raise NotImplementedError("Method not implemented yet")
 
     def is_terminal(self, stage):
+        raise NotImplementedError("Method not implemented yet")
+
+    def get_after(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
     def get_initial_datasets(self):

@@ -49,7 +49,7 @@ class BenchmarkConverter(SnakemakeConverterTrait):
             stage = self.get_benchmark_stages()[stage]
 
         if stage.terminal:
-            return None
+            return {}
 
         return dict([(output.id, output.path) for output in stage.outputs])
 
@@ -74,4 +74,8 @@ class BenchmarkConverter(SnakemakeConverterTrait):
             return stage.terminal
         else:
             return False
+
+    def get_after(self, stage):
+        return stage.after
+
 

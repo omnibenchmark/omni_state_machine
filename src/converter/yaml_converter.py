@@ -54,7 +54,7 @@ class YamlConverter(SnakemakeConverterTrait):
             stage = self.get_benchmark_stages()[stage]
 
         if 'terminal' in stage.keys() and stage['terminal']:
-            return None
+            return {}
 
         return dict([(output['id'], output['path']) for output in stage['outputs']])
 
@@ -98,6 +98,12 @@ class YamlConverter(SnakemakeConverterTrait):
             return True
         else:
             return False
+
+    def get_after(self, stage):
+        if 'after' in stage.keys():
+            return stage['after']
+        else:
+            return None
 
     def get_initial_dataset_paths(self, dataset):
         filled = []
