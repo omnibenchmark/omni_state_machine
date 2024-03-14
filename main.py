@@ -1,7 +1,7 @@
 import src.formatter as fmt
 from src.dag import *
 from src.converter import BenchmarkConverter
-
+import re
 
 if __name__ == "__main__":
     benchmark = load_benchmark('data/Benchmark_001.yaml')
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         modules_in_stage = converter.get_modules_by_stage(stage)
         for module_id in modules_in_stage:
             if not converter.is_initial(stage) and not converter.is_terminal(stage):
-                result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id, module_id=module_id)
+                result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id, module_id=module_id, param_id='default')
                 print(result)
 
     G = build_dag_from_definition(converter)
@@ -57,5 +57,7 @@ if __name__ == "__main__":
                 paths = construct_output_paths(converter, prefix='out', nodes=path)
                 all_paths.update(paths)
 
-    print(all_paths)
+    all_paths = list(all_paths)
+
+    print([re.match(r'out/data/([^/]+)/', x).group(1) for x in all_paths])
 
