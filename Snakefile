@@ -15,7 +15,9 @@ include: 'snakemake.py'
 configfile: op.join('data', 'Benchmark_001.yaml')
 
 rule all:
-    input: expand(all_paths)
+    input:
+        #all_paths,
+        "out/data/D2/default/process/P1/default/D2.txt.gz"
 
 
 rule start_benchmark:
@@ -70,6 +72,7 @@ for node in G.nodes:
     param_id = node.param_id
 
     stage = stages[stage_id]
+    print('stage_id is', stage_id)
 
     if converter.is_initial(stage):
         rule:
@@ -95,17 +98,19 @@ for node in G.nodes:
         rule:
             wildcard_constraints:
                 #pre = '(.*\/.*)+',
-                stage='|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
-                params = ".*",
-                module = '.*',
+                stage= stage_id, # '|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
+                # params = ".*",
+                module = module_id,
                 name='|'.join([re.escape(x) for x in converter.get_initial_datasets()])
             name:  f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
             input:
-                lambda wildcards: format_input_templates_to_be_expanded(all_paths, wildcards, stage_id, module_id, param_id)
-                #'{pre}/data/{module}/{params}/{name}.txt.gz'
+                # lambda wildcards: format_input_templates_to_be_expanded(all_paths, wildcards, stage_id, module_id, param_id)
+                # format_input_templates_to_be_expanded()
+                '{pre}/{name}.txt.gz'
             output:
-                format_output_templates_to_be_expanded(stage_id=stage_id, module_id=module_id, param_id=param_id)
-                # "{pre}/{stage}/{dataset}/{params}/{dataset}_params.txt"
+                # format_output_templates_to_be_expanded(stage_id=stage_id, module_id=module_id, param_id=param_id)
+                "{pre}/{stage}/{module}/{params}/{name}.txt.gz"
+                # "out/data/D2/default/process/P1/default/D2.txt.gz"
             script:
                 op.join("src", "do_something.py")
 
