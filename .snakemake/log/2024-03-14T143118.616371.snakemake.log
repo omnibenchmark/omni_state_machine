@@ -1,0 +1,4 @@
+Building DAG of jobs...
+WildcardError in rule methods_M1_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 96:
+Wildcards in input files cannot be determined from output files: (rule methods_M1_default_run, line 160, /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile)
+'module'

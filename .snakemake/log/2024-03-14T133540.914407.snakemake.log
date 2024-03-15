@@ -1,0 +1,538 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                            count
+---------------------------  -------
+all                                1
+data_D1_default_run                1
+data_D2_default_run                1
+methods_M1_default_run             8
+methods_M2_-d1__-e_1_run           8
+methods_M2_-d1__-e_2_run           8
+process_P1_-a_0__-b_0_1_run        2
+process_P1_-a_1__-b_0_1_run        2
+process_P2_-a_0__-c_0_run          2
+process_P2_-a_1__-c_0_1_run        2
+start_benchmark                    1
+total                             36
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:40 2024]
+localrule process_P1_-a_0__-b_0_1_run:
+    output: out/data/D2/default/process/P1/-a_0__-b_0_1/D2.txt.gz
+    jobid: 3
+    reason: Missing output files: out/data/D2/default/process/P1/-a_0__-b_0_1/D2.txt.gz
+    wildcards: pre=out/data/D2/default, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 3.
+1 of 36 steps (3%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M1_default_run:
+    output: out/data/D1/default/process/P2/-a_0__-c_0/methods/M1/default/D1.model.out.gz
+    jobid: 22
+    reason: Missing output files: out/data/D1/default/process/P2/-a_0__-c_0/methods/M1/default/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_0__-c_0, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 22.
+2 of 36 steps (6%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    jobid: 32
+    reason: Missing output files: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_0__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 32.
+3 of 36 steps (8%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M1_default_run:
+    output: out/data/D2/default/process/P2/-a_0__-c_0/methods/M1/default/D2.model.out.gz
+    jobid: 27
+    reason: Missing output files: out/data/D2/default/process/P2/-a_0__-c_0/methods/M1/default/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_0__-c_0, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 27.
+4 of 36 steps (11%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M1_default_run:
+    output: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M1/default/D2.model.out.gz
+    jobid: 8
+    reason: Missing output files: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M1/default/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_1__-c_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 8.
+5 of 36 steps (14%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule process_P2_-a_1__-c_0_1_run:
+    output: out/data/D2/default/process/P2/-a_1__-c_0_1/D2.txt.gz
+    jobid: 17
+    reason: Missing output files: out/data/D2/default/process/P2/-a_1__-c_0_1/D2.txt.gz
+    wildcards: pre=out/data/D2/default, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 17.
+6 of 36 steps (17%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule process_P2_-a_1__-c_0_1_run:
+    output: out/data/D1/default/process/P2/-a_1__-c_0_1/D1.txt.gz
+    jobid: 2
+    reason: Missing output files: out/data/D1/default/process/P2/-a_1__-c_0_1/D1.txt.gz
+    wildcards: pre=out/data/D1/default, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 2.
+7 of 36 steps (19%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    jobid: 31
+    reason: Missing output files: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_1__-c_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 31.
+8 of 36 steps (22%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    jobid: 21
+    reason: Missing output files: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_1__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 21.
+9 of 36 steps (25%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M1_default_run:
+    output: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M1/default/D1.model.out.gz
+    jobid: 16
+    reason: Missing output files: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M1/default/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_1__-c_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 16.
+10 of 36 steps (28%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    jobid: 26
+    reason: Missing output files: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_0__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 26.
+11 of 36 steps (31%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule process_P1_-a_1__-b_0_1_run:
+    output: out/data/D1/default/process/P1/-a_1__-b_0_1/D1.txt.gz
+    jobid: 7
+    reason: Missing output files: out/data/D1/default/process/P1/-a_1__-b_0_1/D1.txt.gz
+    wildcards: pre=out/data/D1/default, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 7.
+12 of 36 steps (33%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    jobid: 13
+    reason: Missing output files: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_1__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:41 2024]
+Finished job 13.
+13 of 36 steps (36%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:41 2024]
+localrule methods_M1_default_run:
+    output: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M1/default/D2.model.out.gz
+    jobid: 20
+    reason: Missing output files: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M1/default/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_1__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 20.
+14 of 36 steps (39%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M1_default_run:
+    output: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M1/default/D1.model.out.gz
+    jobid: 30
+    reason: Missing output files: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M1/default/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_0__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 30.
+15 of 36 steps (42%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    jobid: 6
+    reason: Missing output files: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_1__-c_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 6.
+16 of 36 steps (44%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule process_P1_-a_0__-b_0_1_run:
+    output: out/data/D1/default/process/P1/-a_0__-b_0_1/D1.txt.gz
+    jobid: 15
+    reason: Missing output files: out/data/D1/default/process/P1/-a_0__-b_0_1/D1.txt.gz
+    wildcards: pre=out/data/D1/default, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 15.
+17 of 36 steps (47%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D2.model.out.gz
+    jobid: 25
+    reason: Missing output files: out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_0__-c_0, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 25.
+18 of 36 steps (50%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    jobid: 35
+    reason: Missing output files: out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_1__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 35.
+19 of 36 steps (53%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D2.model.out.gz
+    jobid: 24
+    reason: Missing output files: out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P2/-a_0__-c_0, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 24.
+20 of 36 steps (56%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    jobid: 34
+    reason: Missing output files: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_1__-c_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 34.
+21 of 36 steps (58%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D1.model.out.gz
+    jobid: 10
+    reason: Missing output files: out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_0__-c_0, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 10.
+22 of 36 steps (61%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M1_default_run:
+    output: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M1/default/D1.model.out.gz
+    jobid: 29
+    reason: Missing output files: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M1/default/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_1__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 29.
+23 of 36 steps (64%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M1_default_run:
+    output: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M1/default/D2.model.out.gz
+    jobid: 4
+    reason: Missing output files: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M1/default/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_0__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 4.
+24 of 36 steps (67%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule process_P2_-a_0__-c_0_run:
+    output: out/data/D2/default/process/P2/-a_0__-c_0/D2.txt.gz
+    jobid: 23
+    reason: Missing output files: out/data/D2/default/process/P2/-a_0__-c_0/D2.txt.gz
+    wildcards: pre=out/data/D2/default, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 23.
+25 of 36 steps (69%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D1.model.out.gz
+    jobid: 33
+    reason: Missing output files: out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_0__-c_0, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 33.
+26 of 36 steps (72%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    jobid: 9
+    reason: Missing output files: out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P2/-a_1__-c_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:42 2024]
+Finished job 9.
+27 of 36 steps (75%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:42 2024]
+localrule process_P2_-a_0__-c_0_run:
+    output: out/data/D1/default/process/P2/-a_0__-c_0/D1.txt.gz
+    jobid: 18
+    reason: Missing output files: out/data/D1/default/process/P2/-a_0__-c_0/D1.txt.gz
+    wildcards: pre=out/data/D1/default, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 18.
+28 of 36 steps (78%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule methods_M2_-d1__-e_2_run:
+    output: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    jobid: 28
+    reason: Missing output files: out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz
+    wildcards: pre=out/data/D2/default/process/P1/-a_0__-b_0_1, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 28.
+29 of 36 steps (81%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    jobid: 19
+    reason: Missing output files: out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_0__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 19.
+30 of 36 steps (83%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule methods_M2_-d1__-e_1_run:
+    output: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    jobid: 5
+    reason: Missing output files: out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz
+    wildcards: pre=out/data/D1/default/process/P1/-a_1__-b_0_1, name=D1
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 5.
+31 of 36 steps (86%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule process_P1_-a_1__-b_0_1_run:
+    output: out/data/D2/default/process/P1/-a_1__-b_0_1/D2.txt.gz
+    jobid: 1
+    reason: Missing output files: out/data/D2/default/process/P1/-a_1__-b_0_1/D2.txt.gz
+    wildcards: pre=out/data/D2/default, name=D2
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 1.
+32 of 36 steps (89%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule start_benchmark:
+    output: log/system_profiling.txt
+    jobid: 12
+    reason: Missing output files: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+
+        echo '---------------' > log/system_profiling.txt
+        echo 'DATE' >> log/system_profiling.txt
+        date >> log/system_profiling.txt
+        echo '
+OS' >> log/system_profiling.txt
+        uname -a >> log/system_profiling.txt
+        echo '
+nproc' >> log/system_profiling.txt
+        nproc >> log/system_profiling.txt
+        echo '
+cgroups' >> log/system_profiling.txt
+        ## to detect docker runs
+        cat /proc/1/cgroup >> log/system_profiling.txt        
+        
+[Thu Mar 14 13:35:43 2024]
+Finished job 12.
+33 of 36 steps (92%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule data_D2_default_run:
+    input: log/system_profiling.txt
+    output: out/data/D2/default/D2.txt.gz, out/data/D2/default/D2.meta.json, out/data/D2/default/D2_params.txt
+    jobid: 11
+    reason: Missing output files: out/data/D2/default/D2.meta.json, out/data/D2/default/D2.txt.gz, out/data/D2/default/D2_params.txt; Input files updated by another job: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 11.
+34 of 36 steps (94%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule data_D1_default_run:
+    input: log/system_profiling.txt
+    output: out/data/D1/default/D1.txt.gz, out/data/D1/default/D1.meta.json, out/data/D1/default/D1_params.txt
+    jobid: 14
+    reason: Missing output files: out/data/D1/default/D1.txt.gz, out/data/D1/default/D1_params.txt, out/data/D1/default/D1.meta.json; Input files updated by another job: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 14.
+35 of 36 steps (97%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Mar 14 13:35:43 2024]
+localrule all:
+    input: out/data/D2/default/process/P1/-a_1__-b_0_1/D2.txt.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/D1.txt.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/D2.txt.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M1/default/D2.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/D1.txt.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M1/default/D2.model.out.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/D2_params.txt, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/D1.txt.gz, out/data/D2/default/D2.meta.json, out/data/D1/default/process/P1/-a_0__-b_0_1/D1.txt.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M1/default/D1.model.out.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/D2.txt.gz, out/data/D1/default/process/P2/-a_0__-c_0/D1.txt.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M1/default/D2.model.out.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/methods/M1/default/D1.model.out.gz, out/data/D1/default/D1_params.txt, out/data/D2/default/process/P2/-a_0__-c_0/D2.txt.gz, out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D2/default/process/P2/-a_0__-c_0/methods/M1/default/D2.model.out.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M1/default/D1.model.out.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M1/default/D1.model.out.gz, out/data/D2/default/D2.txt.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/D1.meta.json, out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz
+    jobid: 0
+    reason: Input files updated by another job: out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D2/default/D2.txt.gz, out/data/D1/default/D1.meta.json, out/data/D2/default/process/P1/-a_1__-b_0_1/D2.txt.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/D1.txt.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M1/default/D2.model.out.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/D2.txt.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M1/default/D1.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/D1.txt.gz, out/data/D2/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/D1.txt.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D1/default/process/P1/-a_1__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/D1.txt.gz, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D2/default/D2.meta.json, out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/D2.txt.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M1/default/D1.model.out.gz, out/data/D1/default/process/P2/-a_1__-c_0_1/methods/M1/default/D1.model.out.gz, out/data/D1/default/process/P2/-a_0__-c_0/methods/M1/default/D1.model.out.gz, out/data/D2/default/process/P2/-a_0__-c_0/methods/M1/default/D2.model.out.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_1/D1.model.out.gz, out/data/D2/default/process/P2/-a_0__-c_0/D2.txt.gz, out/data/D1/default/D1_params.txt, out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_1/D2.model.out.gz, out/data/D1/default/process/P1/-a_0__-b_0_1/methods/M2/-d1__-e_2/D1.model.out.gz, out/data/D1/default/D1.txt.gz, out/data/D2/default/process/P2/-a_0__-c_0/methods/M2/-d1__-e_2/D2.model.out.gz, out/data/D2/default/D2_params.txt, out/data/D2/default/process/P1/-a_0__-b_0_1/methods/M1/default/D2.model.out.gz, out/data/D2/default/process/P2/-a_1__-c_0_1/methods/M1/default/D2.model.out.gz
+    resources: tmpdir=/tmp
+
+[Thu Mar 14 13:35:43 2024]
+Finished job 0.
+36 of 36 steps (100%) done
+Complete log: .snakemake/log/2024-03-14T133540.914407.snakemake.log
