@@ -16,9 +16,9 @@ configfile: op.join('data', 'Benchmark_001.yaml')
 
 rule all:
     input:
-        # all_paths,
-        "out/data/D2/default/D2.dataext",
-        "out/data/D2/default/process/P1/default/D2.txt.gz",
+        all_paths,
+        # "out/data/D2/default/D2.dataext",
+        # "out/data/D2/default/process/P1/default/D2.txt.gz",
         # "out/data/D1/default/process/P2/default/methods/M2/default/D1.model.out.gz"
 
 
@@ -81,12 +81,13 @@ for node in G.nodes:
         rule:
             name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
             wildcard_constraints:
-                #pre = '(.*\/.*)+',
-                stage= 'data', #'|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
+                stage= stage_id,
                 param = "default",
-                name= module_id # '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
+                name= module_id 
             output:
-                "out/{stage}/{name}/{param}/{name}.dataext"
+                "out/{stage}/{name}/{param}/{name}.txt.gz",
+                "out/{stage}/{name}/{param}/{name}.meta.json",
+                "out/{stage}/{name}/{param}/{name}_params.txt"
             script:
                 op.join('src','do_something.py')
     elif converter.is_terminal(stage):
@@ -97,16 +98,16 @@ for node in G.nodes:
     else:
         rule:
             wildcard_constraints:
-                #pre = '(.*\/.*)+' <- we should fstring pre here using the parent's path
+                post = stage_id + '/' + module_id + '/' + param_id,
                 stage= stage_id, # '|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
                 module = module_id,
                 name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
                 ext=".*$"
             name:  f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
             input:
-                '{pre}/{name}.dataext'
+                '{pre}/{name}.txt.gz'                
             output:
-                "{pre}/{stage}/{module}/{params}/{name}.{ext}"
+                "{pre}/{post}/{name}.{ext}"
             script:
                 op.join("src", "do_something.py")
 
