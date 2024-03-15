@@ -1,0 +1,7 @@
+Processed log/system_profiling.txt to out/data/D1/default/D1.meta.json using params  and threads 1
+  bench_iteration is None
+  resources are 1 1 /tmp
+  wildcards are 
+  rule is data_D1_default_run
+  scriptdir is /home/dani/Documents/omnibenchmark/omni_workflow/src
+  params are 

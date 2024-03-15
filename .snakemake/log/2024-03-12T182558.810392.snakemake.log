@@ -1,0 +1,10 @@
+Building DAG of jobs...
+MissingInputException in rule all in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 41:
+Missing input files for rule all:
+    affected files:
+        data/D1/default/D1_params.txt
+        out/data/D1/default/process/P2/default/methods/M2/default/D1.model.out.gz
+        data/D2/default/D2_params.txt
+        out/data/D1/default/process/P2/default/methods/M1/default/D1.model.out.gz
+        out/data/D1/default/process/P2/default/methods/M2/default/D2.model.out.gz
+        out/data/D1/default/process/P2/default/methods/M1/default/D2.model.out.gz

@@ -44,6 +44,9 @@ class YamlConverter(SnakemakeConverterTrait):
         return excludes
 
     def get_stage_implicit_inputs(self, stage):
+        if isinstance(stage, str):
+            stage = self.get_benchmark_stages()[stage]
+
         if 'initial' in stage.keys() and stage['initial']:
             return None
 

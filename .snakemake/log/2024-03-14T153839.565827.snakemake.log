@@ -1,0 +1,9 @@
+Building DAG of jobs...
+InputFunctionException in rule process_P2_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 94:
+Error:
+  TypeError: format_input_templates_to_be_expanded() got an unexpected keyword argument 'wildcards'
+Wildcards:
+  pre=out/data/D1/default
+  name=D1
+Traceback:
+  File "/home/dani/Documents/omnibenchmark/omni_workflow/Snakefile", line 102, in <lambda> (rule process_P2_default_run, line 155, /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile)

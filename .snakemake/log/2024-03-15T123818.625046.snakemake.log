@@ -1,0 +1,13 @@
+Building DAG of jobs...
+AmbiguousRuleException:
+Rules process_P2_default_run and methods_M1_default_run are ambiguous for the file out/data/D2/default/process/P1/default/D2.txt.gz.
+Consider starting rule output with a unique prefix, constrain your wildcards, or use the ruleorder directive.
+Wildcards:
+	process_P2_default_run: module=D2/default/process/P1,name=D2,params=default,pre=out
+	methods_M1_default_run: module=D2/default/process/P1,name=D2,params=default,pre=out
+Expected input files:
+	process_P2_default_run: log/system_profiling.txt
+	methods_M1_default_run: log/system_profiling.txt
+Expected output files:
+	process_P2_default_run: out/data/D2/default/process/P1/default/D2.txt.gz
+	methods_M1_default_run: out/data/D2/default/process/P1/default/D2.txt.gz

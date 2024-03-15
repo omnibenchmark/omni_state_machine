@@ -1,0 +1,13 @@
+Building DAG of jobs...
+AmbiguousRuleException:
+Rules D1_materialize and D2_materialize are ambiguous for the file data/D1/default/D1_params.txt.
+Consider starting rule output with a unique prefix, constrain your wildcards, or use the ruleorder directive.
+Wildcards:
+	D1_materialize: dataset=D1,params=default
+	D2_materialize: dataset=D1,params=default
+Expected input files:
+	D1_materialize: log/system_profiling.txt
+	D2_materialize: log/system_profiling.txt
+Expected output files:
+	D1_materialize: data/D1/default/D1.txt.gz data/D1/default/D1.meta.json data/D1/default/D1_params.txt
+	D2_materialize: data/D1/default/D1.txt.gz data/D1/default/D1.meta.json data/D1/default/D1_params.txt

@@ -1,3 +1,4 @@
+import re
 
 ## f-strings: rule maker
 ## wildcards: output mapper (only params, currently)
@@ -39,8 +40,37 @@ def format_output_templates_to_be_expanded(converter, stage_id, module_id, param
                   params=param_id,
                   name=name) for x in converter.get_stage_outputs(stage_id).values()]
 
+    print(f'Output: {stage_id} {module_id} {param_id}: {o}')
     return o
 
 
-def format_input_templates_to_be_expanded(converter, stage_id, module_id, param_id):
-    return 'todo'
+def format_input_templates_to_be_expanded(converter, all_paths, wildcards, stage_id, module_id, param_id):
+    o = []
+
+    for x in converter.get_stage_explicit_inputs(stage_id).values():
+        prefix = wildcards.pre
+        name = wildcards.name
+
+        x = x.format(input_dirname='{pre}',
+                     stage='{stage}',
+                     module='{module}',
+                     params='{params}',
+                     name=name)
+
+        # Transform to regular expression pattern
+        #pattern = re.sub(r'\{pre\}', r'(.*)', x)
+        #pattern = re.sub(r'\{module\}', r'([^\/]+)', pattern)
+        #pattern = re.sub(r'\{params\}', r'([^\/]+)', pattern)
+
+        # Compile the pattern into a regular expression object
+        #regex = re.compile(pattern)
+
+        # Match file paths based on the pattern
+        #matched_files = [path for path in all_paths if regex.match(path) and (len(path) < len(prefix) or path.startswith(prefix))]
+        #o.extend(matched_files)
+
+
+
+    print(f'Pre: {wildcards}')
+    print(f'Input: {stage_id} {module_id} {param_id}: {o}')
+    return '{pre}/data/{module}/{params}/{name}.txt.gz'

@@ -29,10 +29,6 @@ if __name__ == "__main__":
             print('    Params:', converter.get_module_parameters(module))
         print('------')
 
-    for dataset in converter.get_initial_datasets():
-        result = fmt.format_dataset_templates_to_be_expanded(converter, dataset)
-        print(result)
-
     print('------')
     stages = converter.get_benchmark_stages()
     for stage_id in stages:
@@ -58,6 +54,3 @@ if __name__ == "__main__":
                 all_paths.update(paths)
 
     all_paths = list(all_paths)
-
-    print([re.match(r'out/data/([^/]+)/', x).group(1) for x in all_paths])
-

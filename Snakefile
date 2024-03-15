@@ -15,9 +15,8 @@ include: 'snakemake.py'
 configfile: op.join('data', 'Benchmark_001.yaml')
 
 rule all:
-    input:
-        expand(all_paths)
-               
+    input: expand(all_paths)
+
 
 rule start_benchmark:
     output:
@@ -63,6 +62,7 @@ rule start_benchmark:
 #         script:
 #             op.join('src', 'do_something.py')
 
+
 stages = converter.get_benchmark_stages()
 for node in G.nodes:
     stage_id = node.stage_id
@@ -70,6 +70,7 @@ for node in G.nodes:
     param_id = node.param_id
 
     stage = stages[stage_id]
+
     if converter.is_initial(stage):
         rule:
             name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
@@ -95,9 +96,13 @@ for node in G.nodes:
             wildcard_constraints:
                 #pre = '(.*\/.*)+',
                 stage='|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
-                # params = "default",
+                params = ".*",
+                module = '.*',
                 name='|'.join([re.escape(x) for x in converter.get_initial_datasets()])
             name:  f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
+            input:
+                lambda wildcards: format_input_templates_to_be_expanded(all_paths, wildcards, stage_id, module_id, param_id)
+                #'{pre}/data/{module}/{params}/{name}.txt.gz'
             output:
                 format_output_templates_to_be_expanded(stage_id=stage_id, module_id=module_id, param_id=param_id)
                 # "{pre}/{stage}/{dataset}/{params}/{dataset}_params.txt"
