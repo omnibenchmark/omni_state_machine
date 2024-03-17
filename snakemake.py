@@ -33,9 +33,9 @@ def format_name(path, prefix):
 all_paths = [format_name(path, prefix) for path in list(all_paths)]
 
 
-def format_output_templates_to_be_expanded(stage_id, module_id, param_id, name=None, initial=False):
-    return fmt.format_output_templates_to_be_expanded(converter, stage_id, module_id, param_id, name, initial)
+def format_output_templates_to_be_expanded(stage_id, module_id, param_id, initial=False):
+    return fmt.format_output_templates_to_be_expanded(converter, stage_id, module_id, param_id, initial)
 
 
-def format_input_templates_to_be_expanded(all_paths, wildcards, stage_id, module_id, param_id):
-    return fmt.format_input_templates_to_be_expanded(converter, all_paths, wildcards, stage_id, module_id, param_id)
+def format_input_templates_to_be_expanded(stage_id, module_id, param_id):
+    return fmt.format_input_templates_to_be_expanded(converter, stage_id, module_id, param_id)

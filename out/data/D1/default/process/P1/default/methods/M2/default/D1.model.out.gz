@@ -1,7 +1,0 @@
-Processed log/system_profiling.txt to out/data/D1/default/process/P1/default/methods/M2/default/D1.model.out.gz using params  and threads 1
-  bench_iteration is None
-  resources are 1 1 /tmp
-  wildcards are out/data/D1/default/process/P1/default D1
-  rule is methods_M2_default_run
-  scriptdir is /home/dani/Documents/omnibenchmark/omni_workflow/src
-  params are 

@@ -35,14 +35,7 @@ class BenchmarkConverter(SnakemakeConverterTrait):
             all_stages = self.get_benchmark_stages()
             all_stages_outputs = []
             for stage_id in all_stages:
-                outputs = self.get_stage_outputs(stage=stage_id)
-                outputs = {
-                    key: value.format(input_dirname='{input_dirname}',
-                                      stage=stage_id,
-                                      module='{module}',
-                                      params='{params}',
-                                      name='{name}') for key, value in outputs.items()}
-                all_stages_outputs.append(outputs)
+                all_stages_outputs.append(self.get_stage_outputs(stage=stage_id))
 
             all_stages_outputs = merge_dict_list(all_stages_outputs)
             for i in range(len(implicit)):
