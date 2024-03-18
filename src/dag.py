@@ -7,7 +7,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from src.helpers import *
 
-
 class Node:
     def __init__(self, stage_id, module_id, parameters):
         self.stage_id = stage_id
@@ -100,15 +99,6 @@ def construct_output_paths(converter, prefix, nodes):
 
         return paths + construct_output_paths(converter, new_prefix, tail)
 
-
-def format_output_templates_to_be_expanded(converter, pre, nodes):
-    o = [x.format(input_dirname='{pre}',
-                  stage=stage_id,
-                  module=module_id,
-                  params='{params}',
-                  name='{name}') for x in converter.get_stage_outputs(stage_id).values()]
-
-    return o
 
 def plot_graph(g, output_file, scale_factor=1.0, node_spacing=0.1, figure_size=(12, 12)):
     layout = nx.circular_layout(g, scale=scale_factor)

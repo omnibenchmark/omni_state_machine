@@ -20,8 +20,11 @@ class BenchmarkConverter(SnakemakeConverterTrait):
         return dict([(x.id, x) for x in stage.members])
 
     def get_stage_implicit_inputs(self, stage):
+        if isinstance(stage, str):
+            stage = self.get_benchmark_stages()[stage]
+
         if stage.initial:
-            return None
+            return []
 
         return [input.entries for input in stage.inputs]
 
@@ -30,9 +33,11 @@ class BenchmarkConverter(SnakemakeConverterTrait):
         explicit = implicit
         if implicit is not None:
             all_stages = self.get_benchmark_stages()
-            all_stages_outputs = [self.get_stage_outputs(stage=stage_id) for stage_id in all_stages]
-            all_stages_outputs = merge_dict_list(all_stages_outputs)
+            all_stages_outputs = []
+            for stage_id in all_stages:
+                all_stages_outputs.append(self.get_stage_outputs(stage=stage_id))
 
+            all_stages_outputs = merge_dict_list(all_stages_outputs)
             for i in range(len(implicit)):
                 explicit[i] = {key: None for key in implicit[i]}
 
@@ -42,6 +47,7 @@ class BenchmarkConverter(SnakemakeConverterTrait):
 
                     explicit[i][in_deliverable] = curr_output
 
+        explicit = explicit[0] if len(explicit) > 0 else {}
         return explicit
 
     def get_stage_outputs(self, stage):

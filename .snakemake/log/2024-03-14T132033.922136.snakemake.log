@@ -1,0 +1,28 @@
+Building DAG of jobs...
+MissingInputException in rule all in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 18:
+Missing input files for rule all:
+    affected files:
+        out/data/D1/default/D2.meta.json
+        out/data/D1/default/D2_params.txt
+        out/data/D2/default/process/P1/default/methods/M1/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D1/default/<function <lambda> at 0x78873a4e98a0>.meta.json
+        out/data/D2/default/process/P2/default/methods/M2/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D1/default/process/P1/default/methods/M2/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D2/default/D1.txt.gz
+        out/data/D2/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D2/default/<function <lambda> at 0x78873a4e98a0>_params.txt
+        out/data/D2/default/D1.meta.json
+        out/data/D2/default/<function <lambda> at 0x78873a4e98a0>.meta.json
+        out/data/D2/default/process/P2/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D1/default/process/P2/default/methods/M1/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D1/default/process/P1/default/methods/M1/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D2/default/process/P2/default/methods/M1/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D1/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D1/default/D2.txt.gz
+        out/data/D1/default/process/P2/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D1/default/process/P1/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D2/default/process/P1/default/methods/M2/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz
+        out/data/D1/default/<function <lambda> at 0x78873a4e98a0>_params.txt
+        out/data/D2/default/D1_params.txt
+        out/data/D2/default/process/P1/default/<function <lambda> at 0x78873a4e98a0>.txt.gz
+        out/data/D1/default/process/P2/default/methods/M2/default/<function <lambda> at 0x78873a4e98a0>.model.out.gz

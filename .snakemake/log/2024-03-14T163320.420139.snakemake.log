@@ -1,0 +1,9 @@
+Building DAG of jobs...
+InputFunctionException in rule methods_M2_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 104:
+Error:
+  AttributeError: module 'snakemake' has no attribute 'outputs'
+Wildcards:
+  pre=out/data/D1/default/process/P1/default
+  name=D1
+Traceback:
+  File "/home/dani/Documents/omnibenchmark/omni_workflow/Snakefile", line 66, in generate_input (rule methods_M2_default_run, line 165, /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile)

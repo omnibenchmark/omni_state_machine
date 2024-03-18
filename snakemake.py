@@ -1,3 +1,5 @@
+import re
+
 from src.converter import BenchmarkConverter
 from src.helpers import *
 import src.dag as dag
@@ -10,22 +12,30 @@ G = dag.build_dag_from_definition(converter)
 initial_nodes, terminal_nodes = dag.find_initial_and_terminal_nodes(G)
 
 all_paths = set()
+prefix = 'out'
 for initial_node in initial_nodes:
     for terminal_node in terminal_nodes:
         paths = dag.list_all_paths(G, initial_node, terminal_node)
 
         for path in paths:
-            paths = dag.construct_output_paths(converter, prefix='out', nodes=path)
+            paths = dag.construct_output_paths(converter, prefix=prefix, nodes=path)
             all_paths.update(paths)
 
 
-def format_dataset_templates_to_be_expanded(dataset):
-    return fmt.format_dataset_templates_to_be_expanded(converter, dataset)
+def format_name(path, prefix):
+    pattern = fr'{prefix}/.+?/([^/]+)/.+?$'
+    name = re.match(pattern, path)[1]
+    new_path = path.format(name=name)
+
+    return new_path
 
 
-def format_output_templates_to_be_expanded(stage_id, module_id):
-    return fmt.format_output_templates_to_be_expanded(converter, stage_id, module_id)
+all_paths = [format_name(path, prefix) for path in list(all_paths)]
 
 
-def format_input_templates_to_be_expanded(stage_id, module_id):
-    return fmt.format_input_templates_to_be_expanded(converter, stage_id, module_id)
+def format_output_templates_to_be_expanded(stage_id, module_id, param_id, initial=False):
+    return fmt.format_output_templates_to_be_expanded(converter, stage_id, module_id, param_id, initial)
+
+
+def format_input_templates_to_be_expanded(stage_id, module_id, param_id):
+    return fmt.format_input_templates_to_be_expanded(converter, stage_id, module_id, param_id)

@@ -16,13 +16,11 @@ configfile: op.join('data', 'Benchmark_001.yaml')
 
 rule all:
     input:
-        expand('{pre}/{stage}/{module}/{params}/{name}.model.out.gz',
-               pre = 'out/data/D1/default/process/P2/default',
-               stage = 'methods',
-               params = 'default',
-               module = ['M2', 'M1'],
-               name = ['D1', 'D2'])
-               
+        all_paths,
+        # "out/data/D2/default/D2.dataext",
+        # "out/data/D2/default/process/P1/default/D2.txt.gz",
+        # "out/data/D1/default/process/P2/default/methods/M2/default/D1.model.out.gz"
+
 
 rule start_benchmark:
     output:
@@ -69,40 +67,56 @@ rule start_benchmark:
 #             op.join('src', 'do_something.py')
 
 
-## nested module runner, dynamically getting input/outputs (paths)
 stages = converter.get_benchmark_stages()
-for stage_id in stages:
-    stage = stages[stage_id]
+for node in G.nodes:
+    stage_id = node.stage_id
+    module_id = node.module_id
+    param_id = node.param_id
 
-    modules_in_stage = converter.get_modules_by_stage(stage)
-    for module_id in modules_in_stage:
-        if converter.is_initial(stage):
-            rule:
-                name: f"stage_{{stage}}_module_{{module}}_run".format(stage = stage_id, module = module_id)
-                input:
-                    op.join('log','system_profiling.txt')
-                wildcard_constraints:
-                    # pre = '(.*\/.*)+',
-                    stage='|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
-                    # params = "default",
-                    name='|'.join([re.escape(x) for x in converter.get_initial_datasets()])
-                output:
-                    format_output_templates_to_be_expanded(stage_id=stage_id,module_id=module_id)
-                    # "out/data/{dataset}/{params}/{dataset}_params.txt"
-                script:
-                    op.join('src','do_something.py')
-        if not converter.is_terminal(stage):
-            rule:
-                wildcard_constraints:
-                    # pre = '(.*\/.*)+',
-                    stage = '|'.join([re.escape(x) for x in converter.get_benchmark_stages()]),
-                    # params = "default",
-                    name = '|'.join([re.escape(x) for x in converter.get_initial_datasets()])
-                name: f"stage_{{stage}}_module_{{module}}_run".format(stage = stage_id, module = module_id)
-                output:
-                    format_output_templates_to_be_expanded(stage_id = stage_id, module_id = module_id)
-                script:
-                    op.join("src", "do_something.py")
+    stage = stages[stage_id]
+    # print('stage_id is', stage_id, 'and module_id is', module_id, 'is initial', converter.is_initial(stage))
+
+    if converter.is_initial(stage):
+        rule:
+            name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
+            wildcard_constraints:
+                stage = stage_id,
+                module = module_id,
+                param = param_id,
+                name = module_id
+            output:
+                format_output_templates_to_be_expanded(stage_id, module_id, param_id, initial=True)
+                # "out/{stage}/{module}/{param}/{name}.txt.gz",
+                # "out/{stage}/{module}/{param}/{name}.meta.json",
+                # "out/{stage}/{module}/{param}/{name}_params.txt"
+            script:
+                op.join('src','do_something.py')
+    elif converter.is_terminal(stage):
+        rule:
+            name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
+            input:
+                format_input_templates_to_be_expanded(stage_id, module_id, param_id)
+                # '{pre}/{name}.txt.gz'
+            script:
+                op.join('src', 'do_something.py')
+    else:
+        rule:
+            wildcard_constraints:
+                post = stage_id + '/' + module_id + '/' + param_id,
+                stage= stage_id,
+                module = module_id,
+                name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
+                ext = '.*$'
+            name:  f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id, module=module_id, param=param_id)
+            input:
+                # format_input_templates_to_be_expanded(stage_id, module_id, param_id)
+                '{pre}/{name}.txt.gz' # FIXME
+            output:
+                format_output_templates_to_be_expanded(stage_id, module_id, param_id)
+            script:
+                op.join("src", "do_something.py")
+
+## nested module runner, dynamically getting input/outputs (paths)
 
 # start dynamic gatherer generator
 # for stage in stages:

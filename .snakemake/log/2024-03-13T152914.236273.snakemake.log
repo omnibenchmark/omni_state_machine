@@ -1,0 +1,13 @@
+Building DAG of jobs...
+AmbiguousRuleException:
+Rules stage_data_module_D2_run and stage_process_module_P2_run are ambiguous for the file out/data/D2/default/process/P2/default/D1.txt.gz.
+Consider starting rule output with a unique prefix, constrain your wildcards, or use the ruleorder directive.
+Wildcards:
+	stage_data_module_D2_run: name=D1,params=default/process/P2/default,pre=out
+	stage_process_module_P2_run: name=D1,params=default,pre=out/data/D2/default
+Expected input files:
+	stage_data_module_D2_run: 
+	stage_process_module_P2_run: 
+Expected output files:
+	stage_data_module_D2_run: out/data/D2/default/process/P2/default/D1.txt.gz out/data/D2/default/process/P2/default/D1.meta.json out/data/D2/default/process/P2/default/D1_params.txt
+	stage_process_module_P2_run: out/data/D2/default/process/P2/default/D1.txt.gz

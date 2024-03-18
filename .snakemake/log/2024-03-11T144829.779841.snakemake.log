@@ -1,0 +1,130 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+D1                        1
+D2                        1
+all                       1
+start_benchmark           1
+wildcard_awareness        2
+total                     6
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule start_benchmark:
+    output: log/system_profiling.txt
+    jobid: 3
+    reason: Missing output files: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+
+        echo '---------------' > log/system_profiling.txt
+        echo 'DATE' >> log/system_profiling.txt
+        date >> log/system_profiling.txt
+        echo '
+OS' >> log/system_profiling.txt
+        uname -a >> log/system_profiling.txt
+        echo '
+nproc' >> log/system_profiling.txt
+        nproc >> log/system_profiling.txt
+        echo '
+cgroups' >> log/system_profiling.txt
+        ## to detect docker runs
+        cat /proc/1/cgroup >> log/system_profiling.txt        
+        
+[Mon Mar 11 14:48:29 2024]
+Finished job 3.
+1 of 6 steps (17%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule D1:
+    input: log/system_profiling.txt
+    output: data/D1/default/D1.txt.gz, data/D1/default/D1.meta.json, data/D1/default/D1_params.txt
+    jobid: 2
+    reason: Missing output files: data/D1/default/D1.meta.json, data/D1/default/D1.txt.gz, data/D1/default/D1_params.txt; Input files updated by another job: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+
+            echo no wildcards here Im afraid! > data/D1/default/D1.txt.gz
+            echo  > data/D1/default/D1.meta.json
+            echo  > data/D1/default/D1_params.txt
+            
+[Mon Mar 11 14:48:29 2024]
+Finished job 2.
+2 of 6 steps (33%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule D2:
+    input: log/system_profiling.txt
+    output: data/D2/default/D2.txt.gz, data/D2/default/D2.meta.json, data/D2/default/D2_params.txt
+    jobid: 4
+    reason: Missing output files: data/D2/default/D2.meta.json, data/D2/default/D2_params.txt, data/D2/default/D2.txt.gz; Input files updated by another job: log/system_profiling.txt
+    resources: tmpdir=/tmp
+
+
+            echo no wildcards here Im afraid! > data/D2/default/D2.txt.gz
+            echo  > data/D2/default/D2.meta.json
+            echo  > data/D2/default/D2_params.txt
+            
+[Mon Mar 11 14:48:29 2024]
+Finished job 4.
+3 of 6 steps (50%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule wildcard_awareness:
+    input: data/D1/default/D1.txt.gz, data/D1/default/D1.meta.json, data/D1/default/D1_params.txt, data/D2/default/D2.txt.gz, data/D2/default/D2.meta.json, data/D2/default/D2_params.txt
+    output: log/data_default_D1.txt
+    jobid: 1
+    reason: Missing output files: log/data_default_D1.txt; Input files updated by another job: data/D2/default/D2.meta.json, data/D1/default/D1.txt.gz, data/D2/default/D2.txt.gz, data/D1/default/D1.meta.json, data/D2/default/D2_params.txt, data/D1/default/D1_params.txt
+    wildcards: stage=data, params=default, id=D1
+    resources: tmpdir=/tmp
+
+
+        echo id=D1,params=default,stage=data > log/data_default_D1.txt
+        
+[Mon Mar 11 14:48:29 2024]
+Finished job 1.
+4 of 6 steps (67%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule wildcard_awareness:
+    input: data/D1/default/D1.txt.gz, data/D1/default/D1.meta.json, data/D1/default/D1_params.txt, data/D2/default/D2.txt.gz, data/D2/default/D2.meta.json, data/D2/default/D2_params.txt
+    output: log/data_default_D2.txt
+    jobid: 5
+    reason: Missing output files: log/data_default_D2.txt; Input files updated by another job: data/D2/default/D2.meta.json, data/D1/default/D1.txt.gz, data/D2/default/D2.txt.gz, data/D1/default/D1.meta.json, data/D2/default/D2_params.txt, data/D1/default/D1_params.txt
+    wildcards: stage=data, params=default, id=D2
+    resources: tmpdir=/tmp
+
+
+        echo id=D2,params=default,stage=data > log/data_default_D2.txt
+        
+[Mon Mar 11 14:48:29 2024]
+Finished job 5.
+5 of 6 steps (83%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Mon Mar 11 14:48:29 2024]
+localrule all:
+    input: log/data_default_D1.txt, log/data_default_D2.txt
+    jobid: 0
+    reason: Input files updated by another job: log/data_default_D1.txt, log/data_default_D2.txt
+    resources: tmpdir=/tmp
+
+[Mon Mar 11 14:48:29 2024]
+Finished job 0.
+6 of 6 steps (100%) done
+Complete log: .snakemake/log/2024-03-11T144829.779841.snakemake.log
