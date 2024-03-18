@@ -1,9 +1,0 @@
-Building DAG of jobs...
-InputFunctionException in rule all in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 18:
-Error:
-  TypeError: expected string or bytes-like object, got 'Wildcards'
-Wildcards:
-
-Traceback:
-  File "/home/dani/Documents/omnibenchmark/omni_workflow/Snakefile", line 21, in <lambda>
-  File "/usr/lib/python3.11/re/__init__.py", line 166, in match (rule all, line 22, /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile)

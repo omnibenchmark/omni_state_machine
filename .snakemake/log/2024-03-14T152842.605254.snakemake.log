@@ -1,3 +1,0 @@
-Building DAG of jobs...
-CyclicGraphException in rule methods_M2_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 96:
-Cyclic dependency on rule methods_M2_default_run.

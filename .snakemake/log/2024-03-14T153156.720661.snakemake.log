@@ -1,7 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule methods_M1_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 94:
-Missing input files for rule methods_M1_default_run:
-    output: out/data/D1/default/process/P1/default/methods/M1/default/D1.model.out.gz
-    wildcards: pre=out/data/D1/default/process/P1/default, name=D1
-    affected files:
-        log/system_profiling.log

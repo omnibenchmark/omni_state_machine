@@ -1,9 +1,0 @@
-Building DAG of jobs...
-InputFunctionException in rule process_P1_default_run in file /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile, line 104:
-Error:
-  NameError: name 'output' is not defined
-Wildcards:
-  pre=out/data/D1/default
-  name=D1
-Traceback:
-  File "/home/dani/Documents/omnibenchmark/omni_workflow/Snakefile", line 66, in generate_input (rule process_P1_default_run, line 165, /home/dani/Documents/omnibenchmark/omni_workflow/Snakefile)
