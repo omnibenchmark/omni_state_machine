@@ -37,7 +37,7 @@ if __name__ == "__main__":
         modules_in_stage = converter.get_modules_by_stage(stage)
         for module_id in modules_in_stage:
             if not converter.is_initial(stage) and not converter.is_terminal(stage):
-                result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id, module_id=module_id, param_id='default')
+                result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id)
                 print(result)
 
     G = build_dag_from_definition(converter)

@@ -39,7 +39,7 @@ def expend_stage_nodes(converter, stage_id, stage):
         if not parameters or len(parameters) == 0:
             parameters = [['default']]
 
-        parameters = [['default']]
+        # parameters = [['default']]
         for param in parameters:
             node = Node(stage_id, module_id, param)
             nodes.append(node)

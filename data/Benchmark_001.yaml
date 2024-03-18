@@ -111,7 +111,11 @@ steps:
         repo: omnibenchmark/test/m3
     inputs:
       - entries: [
-          methods.mapping,
-          data.meta,
-          data.data_specific_params
-        ]
+        methods.mapping,
+        data.meta,
+        data.data_specific_params
+      ]
+    outputs:
+      - id: metrics.mapping
+        name: mapping
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.results.txt"

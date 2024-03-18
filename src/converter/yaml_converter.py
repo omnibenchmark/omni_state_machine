@@ -56,9 +56,6 @@ class YamlConverter(SnakemakeConverterTrait):
         if isinstance(stage, str):
             stage = self.get_benchmark_stages()[stage]
 
-        if 'terminal' in stage.keys() and stage['terminal']:
-            return {}
-
         return dict([(output['id'], output['path']) for output in stage['outputs']])
 
     def get_stage_explicit_inputs(self, stage):
