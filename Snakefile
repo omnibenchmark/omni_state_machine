@@ -39,7 +39,6 @@ rule start_benchmark:
         cat /proc/1/cgroup >> {output.seed}        
         """
 
-rule_params = {}
 stages = converter.get_benchmark_stages()
 for node in G.nodes:
     stage_id = node.stage_id
@@ -77,5 +76,6 @@ for node in G.nodes:
                 # '{pre}/{name}.txt.gz'
             output:
                 format_output_templates_to_be_expanded(stage_id)
+                # "{pre}/{stage}/{module}/{param}/{name}.txt.gz",
             script:
                 op.join("src","do_something.py")
