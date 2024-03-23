@@ -31,15 +31,20 @@ if __name__ == "__main__":
         print('------')
 
     print('------')
+
+    path_exclusions = {}
     stages = converter.get_benchmark_stages()
     for stage_id in stages:
         stage = stages[stage_id]
 
         modules_in_stage = converter.get_modules_by_stage(stage)
         for module_id in modules_in_stage:
+            module_excludes = converter.get_module_excludes(module_id)
+            if module_excludes:
+                path_exclusions[module_id] = module_excludes
+
             if not converter.is_initial(stage) and not converter.is_terminal(stage):
                 result = fmt.format_output_templates_to_be_expanded(converter, stage_id=stage_id)
-                print(result)
 
     G = build_dag_from_definition(converter)
     plot_graph(G, output_file='output_dag.png', scale_factor=1.5, node_spacing=0.2)
@@ -49,8 +54,9 @@ if __name__ == "__main__":
     for initial_node in initial_nodes:
         for terminal_node in terminal_nodes:
             paths = list_all_paths(G, initial_node, terminal_node)
+            paths_after_exclusion = exclude_paths(paths, path_exclusions)
 
-            for path in paths:
+            for path in paths_after_exclusion:
                 paths = construct_output_paths(converter, prefix='out', nodes=path)
                 all_paths.update(paths)
 

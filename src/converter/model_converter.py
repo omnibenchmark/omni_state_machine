@@ -60,6 +60,9 @@ class BenchmarkConverter(SnakemakeConverterTrait):
         return dict([(output.id, output.path) for output in stage.outputs])
 
     def get_module_excludes(self, module):
+        if isinstance(module, str):
+            module = self.get_benchmark_modules()[module]
+
         return module.exclude
 
     def get_module_parameters(self, module):

@@ -91,6 +91,41 @@ def list_all_paths(graph, source, target):
     return all_paths
 
 
+def contains_all(path, modules):
+    path_modules = [node.module_id for node in path]
+    return all(module in path_modules for module in modules)
+
+
+def exclude_paths(paths, path_exclusions):
+    updated_paths = []
+    for path in paths:
+        should_exclude = False
+        for module, excluded_modules in path_exclusions.items():
+            for excluded_module in excluded_modules:
+                if contains_all(path, [module, excluded_module]):
+                    should_exclude = True
+
+        if should_exclude:
+            updated_paths.append(path)
+
+    return updated_paths
+
+
+def get_path_exclusions(converter):
+    path_exclusions = {}
+    stages = converter.get_benchmark_stages()
+    for stage_id in stages:
+        stage = stages[stage_id]
+
+        modules_in_stage = converter.get_modules_by_stage(stage)
+        for module_id in modules_in_stage:
+            module_excludes = converter.get_module_excludes(module_id)
+            if module_excludes:
+                path_exclusions[module_id] = module_excludes
+
+    return path_exclusions
+
+
 def construct_output_paths(converter, prefix, nodes):
     if nodes is None or len(nodes) == 0:
         return []

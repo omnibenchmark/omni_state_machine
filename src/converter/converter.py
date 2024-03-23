@@ -13,6 +13,9 @@ class SnakemakeConverterTrait:
     def get_modules_by_stage(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
+    def get_benchmark_modules(self):
+        raise NotImplementedError("Method not implemented yet")
+
     def get_stage_implicit_inputs(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
@@ -45,6 +48,18 @@ class SnakemakeConverterTrait:
                 return self.get_modules_by_stage(stage)
 
     def get_initial_stage(self):
-        for (stage_name, stage) in self.get_benchmark_stages():
+        stages = self.get_benchmark_stages()
+        for stage_id in stages:
+            stage = stages[stage_id]
             if self.is_initial(stage):
                 return stage
+
+    def get_benchmark_modules(self):
+        modules = {}
+        stages = self.get_benchmark_stages()
+        for stage_id in stages:
+            stage = stages[stage_id]
+            modules_in_stage = self.get_modules_by_stage(stage)
+            modules.update(modules_in_stage)
+
+        return modules
