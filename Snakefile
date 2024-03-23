@@ -63,6 +63,8 @@ for node in G.nodes:
                 # "out/{stage}/{module}/{param}/{name}.txt.gz",
                 # "out/{stage}/{module}/{param}/{name}.meta.json",
                 # "out/{stage}/{module}/{param}/{name}_params.txt"
+            params:
+                parameters = node.parameters
             script:
                 op.join('src','do_something.py')
     else:
@@ -79,5 +81,7 @@ for node in G.nodes:
             output:
                 format_output_templates_to_be_expanded(stage_id)
                 # "{pre}/{stage}/{module}/{param}/{name}.txt.gz",
+            params:
+                parameters = node.parameters
             script:
                 op.join("src","do_something.py")

@@ -9,13 +9,13 @@ from src.helpers import *
 
 
 class Node:
-    def __init__(self, stage_id, module_id, parameters, inputs, run_id):
+    def __init__(self, stage_id, module_id, parameters, param_id, inputs, run_id):
         self.stage_id = stage_id
         self.module_id = module_id
         self.parameters = parameters
-        self.param_id = "__".join([make_folder_name_safe(p) for p in parameters])
+        self.param_id = f'param_{param_id}' if parameters else 'default'
         self.inputs = inputs
-        self.run_id = f'run_{run_id}'
+        self.run_id = f'run_{run_id}' if inputs else 'run'
 
     def __str__(self):
         return f"Node({self.stage_id}, {self.module_id}, {self.param_id}, {self.run_id})"
@@ -37,21 +37,20 @@ def expend_stage_nodes(converter, stage_id, stage):
     nodes = []
 
     inputs_for_stage = converter.get_stage_implicit_inputs(stage)
+    if not inputs_for_stage or len(inputs_for_stage) == 0:
+        inputs_for_stage = [None]
+
     modules_in_stage = converter.get_modules_by_stage(stage)
     for module_id in modules_in_stage:
         module = modules_in_stage[module_id]
         parameters = converter.get_module_parameters(module)
         if not parameters or len(parameters) == 0:
-            parameters = [['default']]
+            parameters = [None]
 
-        # parameters = [['default']]
-        for param in parameters:
-            if inputs_for_stage and len(inputs_for_stage) > 0:
-                for run_id, input in enumerate(inputs_for_stage):
-                    node = Node(stage_id, module_id, param, input, run_id)
-                    nodes.append(node)
-            else:
-                node = Node(stage_id, module_id, param, None, 0)
+        # parameters = [None]
+        for param_id, param in enumerate(parameters):
+            for run_id, input in enumerate(inputs_for_stage):
+                node = Node(stage_id, module_id, param, param_id, input, run_id)
                 nodes.append(node)
 
     return nodes
