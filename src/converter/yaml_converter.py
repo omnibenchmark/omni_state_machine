@@ -58,22 +58,18 @@ class YamlConverter(SnakemakeConverterTrait):
 
         return dict([(output['id'], output['path']) for output in stage['outputs']])
 
-    def get_stage_explicit_inputs(self, stage):
-        implicit = self.get_stage_implicit_inputs(stage)
-        explicit = implicit
-        if implicit is not None:
+    def get_stage_explicit_inputs(self, implicit_inputs):
+        explicit = {key: None for key in implicit_inputs}
+        if implicit_inputs is not None:
             all_stages = self.get_benchmark_stages()
             all_stages_outputs = [self.get_stage_outputs(stage=stage_id) for stage_id in all_stages]
             all_stages_outputs = merge_dict_list(all_stages_outputs)
 
-            for i in range(len(implicit)):
-                explicit[i] = {key: None for key in implicit[i]}
+            for in_deliverable in implicit_inputs[i]:
+                 # beware stage needs to be substituted
+                curr_output = all_stages_outputs[in_deliverable]
 
-                for in_deliverable in implicit[i]:
-                    # beware stage needs to be substituted
-                    curr_output = all_stages_outputs[in_deliverable]
-
-                    explicit[i][in_deliverable] = curr_output
+                explicit[in_deliverable] = curr_output
 
         return explicit
 

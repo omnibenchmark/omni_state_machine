@@ -8,12 +8,13 @@ def format_output_templates_to_be_expanded(converter, stage_id, initial=False):
                   stage='{stage}',
                   module='{module}',
                   params='{param}',
+                  run='{run}',
                   name='{name}') for x in stage_outputs]
 
     if not initial:
-        o = [x.replace('/{stage}/{module}/{param}/', '/{post}/') for x in o]
+        o = [x.replace('/{stage}/{module}/{param}/{run}/', '/{post}/') for x in o]
 
-    # print(f'Output: {stage_id} {module_id} {param_id}: {o}')
+    # print(f'Output: {stage_id} {module_id} {param_id} {run_id}: {o}')
     return o
 
 
@@ -21,8 +22,8 @@ def extract_stages(path):
     parts = path.split('/')
     stages = []
 
-    for i in range(len(parts) - 1, 0, -3):
-        sub_parts = parts[i-2:i+1]
+    for i in range(len(parts) - 1, 0, -4):
+        sub_parts = parts[i-3:i+1]
         stages.append(tuple(sub_parts))
 
     return list(reversed(stages))
@@ -38,6 +39,7 @@ def match_input_module(input, stages, name):
             input_dirname='{pre}',
             module=matching_stage[1],
             params=matching_stage[2],
+            run=matching_stage[3],
             name=name,
         )
     else:
@@ -53,7 +55,7 @@ def match_input_prefix(input, pre):
     return formatted_input
 
 
-def match_inputs(inputs, stages, pre, post, name):
+def match_inputs(inputs, stages, pre, name):
     all_matched = True
 
     formatted_inputs = []
@@ -69,19 +71,24 @@ def match_inputs(inputs, stages, pre, post, name):
     return formatted_inputs if all_matched else []
 
 
-def format_input_templates_to_be_expanded(converter, output_paths, wildcards):
+def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildcards):
     pre = wildcards.pre
     post = wildcards.post
     name = wildcards.name
 
     pre_stages = extract_stages(pre)
 
-    stage_id, module_id, param_id = post.split('/')
-    stage_inputs = converter.get_stage_explicit_inputs(stage_id).values()
+    stage_id, module_id, param_id, run_id = post.split('/')
+    node_hash = hash((stage_id, module_id, param_id, run_id))
+    matching_node = next((node for node in nodes if hash(node) == node_hash), None)
+    assert matching_node is not None
 
-    inputs = match_inputs(stage_inputs, pre_stages, pre, post, name)
+    node_implicit_inputs = matching_node.inputs
+    node_inputs = converter.get_stage_explicit_inputs(node_implicit_inputs).values()
+
+    inputs = match_inputs(node_inputs, pre_stages, pre, name)
     for i in inputs:
         assert i in output_paths
 
-    # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
+    # print(f'Inputs: {stage_id} {module_id} {param_id} {run_id}: {inputs}')
     return inputs

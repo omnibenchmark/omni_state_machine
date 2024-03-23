@@ -37,5 +37,5 @@ def format_output_templates_to_be_expanded(stage_id, initial=False):
     return fmt.format_output_templates_to_be_expanded(converter, stage_id, initial)
 
 
-def format_input_templates_to_be_expanded(outputs_paths, wildcards):
-    return fmt.format_input_templates_to_be_expanded(converter, outputs_paths, wildcards)
+def format_input_templates_to_be_expanded(wildcards):
+    return fmt.format_input_templates_to_be_expanded(converter, G.nodes, all_paths, wildcards)

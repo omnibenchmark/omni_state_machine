@@ -7,31 +7,36 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from src.helpers import *
 
+
 class Node:
-    def __init__(self, stage_id, module_id, parameters):
+    def __init__(self, stage_id, module_id, parameters, inputs, run_id):
         self.stage_id = stage_id
         self.module_id = module_id
         self.parameters = parameters
         self.param_id = "__".join([make_folder_name_safe(p) for p in parameters])
+        self.inputs = inputs
+        self.run_id = f'run_{run_id}'
 
     def __str__(self):
-        return f"Node({self.stage_id}, {self.module_id}, {self.param_id})"
+        return f"Node({self.stage_id}, {self.module_id}, {self.param_id}, {self.run_id})"
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
         if isinstance(other, Node):
-            return (self.stage_id, self.module_id, self.parameters) == \
-                   (other.stage_id, other.module_id, other.parameters)
+            return (self.stage_id, self.module_id, self.parameters, self.inputs) == \
+                   (other.stage_id, other.module_id, other.parameters, other.inputs)
         return False
 
     def __hash__(self):
-        return hash((self.stage_id, self.module_id, self.param_id))
+        return hash((self.stage_id, self.module_id, self.param_id, self.run_id))
 
 
 def expend_stage_nodes(converter, stage_id, stage):
     nodes = []
+
+    inputs_for_stage = converter.get_stage_implicit_inputs(stage)
     modules_in_stage = converter.get_modules_by_stage(stage)
     for module_id in modules_in_stage:
         module = modules_in_stage[module_id]
@@ -41,8 +46,13 @@ def expend_stage_nodes(converter, stage_id, stage):
 
         # parameters = [['default']]
         for param in parameters:
-            node = Node(stage_id, module_id, param)
-            nodes.append(node)
+            if inputs_for_stage and len(inputs_for_stage) > 0:
+                for run_id, input in enumerate(inputs_for_stage):
+                    node = Node(stage_id, module_id, param, input, run_id)
+                    nodes.append(node)
+            else:
+                node = Node(stage_id, module_id, param, None, 0)
+                nodes.append(node)
 
     return nodes
 
@@ -92,9 +102,10 @@ def construct_output_paths(converter, prefix, nodes):
                           stage=head.stage_id,
                           module=head.module_id,
                           params=head.param_id,
+                          run=head.run_id,
                           name='{name}') for x in converter.get_stage_outputs(head.stage_id).values()]
 
-        current_path = f'{head.stage_id}/{head.module_id}/{head.param_id}'
+        current_path = f'{head.stage_id}/{head.module_id}/{head.param_id}/{head.run_id}'
         new_prefix = f'{prefix}/{current_path}'
 
         return paths + construct_output_paths(converter, new_prefix, tail)

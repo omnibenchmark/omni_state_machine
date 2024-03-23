@@ -28,10 +28,9 @@ class BenchmarkConverter(SnakemakeConverterTrait):
 
         return [input.entries for input in stage.inputs]
 
-    def get_stage_explicit_inputs(self, stage):
-        implicit = self.get_stage_implicit_inputs(stage)
-        explicit = implicit
-        if implicit is not None:
+    def get_stage_explicit_inputs(self, implicit_inputs):
+        explicit = {key: None for key in implicit_inputs}
+        if implicit_inputs is not None:
             all_stages = self.get_benchmark_stages()
             all_stages_outputs = []
             for stage_id in all_stages:
@@ -41,20 +40,17 @@ class BenchmarkConverter(SnakemakeConverterTrait):
                                       stage=stage_id,
                                       module='{module}',
                                       params='{params}',
+                                      run='{run}',
                                       name='{name}') for key, value in outputs.items()}
                 all_stages_outputs.append(outputs)
 
             all_stages_outputs = merge_dict_list(all_stages_outputs)
-            for i in range(len(implicit)):
-                explicit[i] = {key: None for key in implicit[i]}
+            for in_deliverable in implicit_inputs:
+                # beware stage needs to be substituted
+                curr_output = all_stages_outputs[in_deliverable]
 
-                for in_deliverable in implicit[i]:
-                    # beware stage needs to be substituted
-                    curr_output = all_stages_outputs[in_deliverable]
+                explicit[in_deliverable] = curr_output
 
-                    explicit[i][in_deliverable] = curr_output
-
-        explicit = explicit[1] if len(explicit) > 1 else (explicit[0] if len(explicit) > 0 else {})  # FIXME
         return explicit
 
     def get_stage_outputs(self, stage):

@@ -17,7 +17,8 @@ if __name__ == "__main__":
         modules_in_stage = converter.get_modules_by_stage(stage)
         print('  ', stage_name, 'with modules', modules_in_stage.keys(), '\n')
         print('  Implicit inputs:\n', converter.get_stage_implicit_inputs(stage))
-        print('  Explicit inputs:\n', converter.get_stage_explicit_inputs(stage))
+        print('  Explicit inputs:\n', [converter.get_stage_explicit_inputs(i)
+                                       for i in converter.get_stage_implicit_inputs(stage)])
         print('  Outputs\n', converter.get_stage_outputs(stage))
         print('------')
 

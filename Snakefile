@@ -44,17 +44,19 @@ for node in G.nodes:
     stage_id = node.stage_id
     module_id = node.module_id
     param_id = node.param_id
+    run_id = node.run_id
 
     stage = stages[stage_id]
     # print('stage_id is', stage_id, 'and module_id is', module_id, 'is initial', converter.is_initial(stage))
 
     if converter.is_initial(stage):
         rule:
-            name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id,module=module_id,param=param_id)
+            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
             wildcard_constraints:
                 stage=stage_id,
                 module=module_id,
                 param=param_id,
+                run=run_id,
                 name=module_id
             output:
                 format_output_templates_to_be_expanded(stage_id,initial=True)
@@ -66,13 +68,13 @@ for node in G.nodes:
     else:
         rule:
             wildcard_constraints:
-                post=stage_id + '/' + module_id + '/' + param_id,
+                post=stage_id + '/' + module_id + '/' + param_id + '/' + run_id,
                 stage=stage_id,
                 module=module_id,
                 name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
-            name: f"{{stage}}_{{module}}_{{param}}_run".format(stage=stage_id,module=module_id,param=param_id)
+            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
             input:
-                lambda wildcards: format_input_templates_to_be_expanded(all_paths, wildcards)
+                lambda wildcards: format_input_templates_to_be_expanded(wildcards)
                 # '{pre}/{name}.txt.gz'
             output:
                 format_output_templates_to_be_expanded(stage_id)
