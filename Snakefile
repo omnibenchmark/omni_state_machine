@@ -47,7 +47,15 @@ for node in G.nodes:
     run_id = node.run_id
 
     stage = stages[stage_id]
+    stage_outputs = converter.get_stage_outputs(stage).values()
     # print('stage_id is', stage_id, 'and module_id is', module_id, 'is initial', converter.is_initial(stage))
+
+    post = stage_id + '/' + module_id
+    if any(['{params}' in o for o in stage_outputs]):
+        post += '/' + param_id
+
+    if any(['{run}' in o for o in stage_outputs]):
+        post += '/' + run_id
 
     if converter.is_initial(stage):
         rule:
@@ -55,14 +63,14 @@ for node in G.nodes:
             wildcard_constraints:
                 stage=stage_id,
                 module=module_id,
-                param=param_id,
+                params=param_id,
                 run=run_id,
                 name=module_id
             output:
                 format_output_templates_to_be_expanded(stage_id,initial=True)
-                # "out/{stage}/{module}/{param}/{name}.txt.gz",
-                # "out/{stage}/{module}/{param}/{name}.meta.json",
-                # "out/{stage}/{module}/{param}/{name}_params.txt"
+                # "out/{stage}/{module}/{params}/{run}/{name}.txt.gz",
+                # "out/{stage}/{module}/{params}/{run}/{name}.meta.json",
+                # "out/{stage}/{module}/{params}/{run}/{name}_params.txt"
             params:
                 parameters = node.parameters
             script:
@@ -70,17 +78,16 @@ for node in G.nodes:
     else:
         rule:
             wildcard_constraints:
-                post=stage_id + '/' + module_id + '/' + param_id + '/' + run_id,
+                post=post,
                 stage=stage_id,
                 module=module_id,
                 name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
             name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
             input:
                 lambda wildcards: format_input_templates_to_be_expanded(wildcards)
-                # '{pre}/{name}.txt.gz'
             output:
                 format_output_templates_to_be_expanded(stage_id)
-                # "{pre}/{stage}/{module}/{param}/{name}.txt.gz",
+                # "{pre}/{stage}/{module}/{params}/{run}/{name}.txt.gz",
             params:
                 parameters = node.parameters
             script:

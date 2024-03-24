@@ -1,4 +1,5 @@
 import yaml
+import re
 import omni_schema.datamodel.omni_schema as model
 from linkml_runtime.loaders import yaml_loader
 
@@ -29,5 +30,13 @@ def make_folder_name_safe(parameter_value):
     safe_value = parameter_value.replace(" ", "_").replace(".", "_")
 
     return safe_value
+
+
+def format_name(path, prefix):
+    pattern = fr'{prefix}/.+?/([^/]+)/.+?$'
+    name = re.match(pattern, path)[1]
+    new_path = path.format(name=name)
+
+    return new_path
 
 

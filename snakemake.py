@@ -1,5 +1,3 @@
-import re
-
 from src.converter import BenchmarkConverter
 from src.helpers import *
 import src.dag as dag
@@ -22,14 +20,6 @@ for initial_node in initial_nodes:
         for path in paths_after_exclusion:
             paths = dag.construct_output_paths(converter, prefix=prefix, nodes=path)
             all_paths.update(paths)
-
-
-def format_name(path, prefix):
-    pattern = fr'{prefix}/.+?/([^/]+)/.+?$'
-    name = re.match(pattern, path)[1]
-    new_path = path.format(name=name)
-
-    return new_path
 
 
 all_paths = [format_name(path, prefix) for path in list(all_paths)]

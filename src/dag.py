@@ -5,7 +5,6 @@
 
 import networkx as nx
 import matplotlib.pyplot as plt
-from src.helpers import *
 
 
 class Node:
@@ -15,7 +14,7 @@ class Node:
         self.parameters = parameters
         self.param_id = f'param_{param_id}' if parameters else 'default'
         self.inputs = inputs
-        self.run_id = f'run_{run_id}' if inputs else 'run'
+        self.run_id = f'run_{run_id}' if inputs and run_id is not None else 'run'
 
     def __str__(self):
         return f"Node({self.stage_id}, {self.module_id}, {self.param_id}, {self.run_id})"
@@ -50,6 +49,7 @@ def expend_stage_nodes(converter, stage_id, stage):
         # parameters = [None]
         for param_id, param in enumerate(parameters):
             for run_id, input in enumerate(inputs_for_stage):
+                run_id = None if len(inputs_for_stage) <= 1 else run_id
                 node = Node(stage_id, module_id, param, param_id, input, run_id)
                 nodes.append(node)
 
@@ -132,15 +132,22 @@ def construct_output_paths(converter, prefix, nodes):
     else:
         head = nodes[0]
         tail = nodes[1:]
+        stage_outputs = converter.get_stage_outputs(head.stage_id).values()
+
+        current_path = f'{head.stage_id}/{head.module_id}'
+        if any(['{params}' in o for o in stage_outputs]):
+            current_path += f'/{head.param_id}'
+
+        if any(['{run}' in o for o in stage_outputs]):
+            current_path += f'/{head.run_id}'
+
+        new_prefix = f'{prefix}/{current_path}'
         paths = [x.format(input_dirname=prefix,
                           stage=head.stage_id,
                           module=head.module_id,
                           params=head.param_id,
                           run=head.run_id,
-                          name='{name}') for x in converter.get_stage_outputs(head.stage_id).values()]
-
-        current_path = f'{head.stage_id}/{head.module_id}/{head.param_id}/{head.run_id}'
-        new_prefix = f'{prefix}/{current_path}'
+                          name='{name}') for x in stage_outputs]
 
         return paths + construct_output_paths(converter, new_prefix, tail)
 
