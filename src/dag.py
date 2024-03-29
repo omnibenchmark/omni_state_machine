@@ -105,7 +105,7 @@ def exclude_paths(paths, path_exclusions):
                 if contains_all(path, [module, excluded_module]):
                     should_exclude = True
 
-        if should_exclude:
+        if not should_exclude:
             updated_paths.append(path)
 
     return updated_paths
