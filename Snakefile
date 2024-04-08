@@ -10,42 +10,17 @@
 from snakemake import rules
 import os.path as op
 
-include: op.join('src', 'workflow_helpers.py')
+include: 'snakemake.py'
 
-configfile: op.join('data', 'minibenchmark.yaml')
-
-print(get_benchmark_definition())
-
-for stage in get_benchmark_stages():
-    print('Stage', stage)
-
-    print('  ', stage, 'with modules', get_modules_by_stage(stage), '\n')
-    print('  Implicit inputs:\n', get_stage_implicit_inputs(stage))
-    print('  Explicit inputs:\n', get_stage_explicit_inputs(stage))
-    print('  Outputs\n', get_stage_outputs(stage))
-    print('------')
-
-    for module in get_modules_by_stage(stage):
-        print('  Module', module)
-        print('    Excludes:', get_module_excludes(stage,  module))
-        print('    Params:',  get_module_parameters(stage, module))
-    print('------')
-
+configfile: op.join('data', 'Benchmark_001.yaml')
 
 rule all:
     input:
-        ## some datasets (these are initial nodes)
-        expand('data/{dataset}/{params}/{dataset}_params.txt',
-               dataset = ['D1', 'D2'],
-               params = 'default'),
-        ## some intermediate steps outputs
-        expand('{pre}/{stage}/{module}/{params}/{id}.model.out.gz',
-               pre = 'out/data/D1/default/process/P2/default',
-               stage = 'methods',
-               params = 'default',
-               module = ['M2', 'M1'],
-               id = ['D1', 'D2'])
-               
+        all_paths,
+        # "out/data/D2/default/D2.dataext",
+        # "out/data/D2/default/process/P1/default/D2.txt.gz",
+        # "out/data/D1/default/process/P2/default/methods/M2/default/D1.model.out.gz"
+        # "out/data/D1/default/process/P2/default/methods/M2/default/m1/default/D1.results.txt"
 
 rule start_benchmark:
     output:
@@ -64,59 +39,56 @@ rule start_benchmark:
         cat /proc/1/cgroup >> {output.seed}        
         """
 
-# rule flow -  ------------------------------------------------------------------------------------------
+stages = converter.get_benchmark_stages()
+for node in G.nodes:
+    stage_id = node.stage_id
+    module_id = node.module_id
+    param_id = node.param_id
+    run_id = node.run_id
 
-# start dynamic per-stage and per-module rule generator
-# for stage in stages:
-#     for module in modules:
-#         if initial:
-#             seed it
-#         if intermediate:
-#             get input templates, fstringed
-#             get output templates, fstringed
-#         if terminal:
-#             do nothing (now)
-# end
+    stage = stages[stage_id]
+    stage_outputs = converter.get_stage_outputs(stage).values()
+    # print('stage_id is', stage_id, 'and module_id is', module_id, 'is initial', converter.is_initial(stage))
 
-for dataset in get_initial_datasets():
-    rule:
-        name: "materialize_dataset"#.format(dataset = dataset)
-        input:
-            op.join('log', 'system_profiling.txt')
-        output:
-            format_dataset_templates_to_be_expanded(dataset)
-            # "data/{dataset}/{params}/{dataset}_params.txt"
-        script:
-            op.join('src', 'do_something.py')
+    post = stage_id + '/' + module_id
+    if any(['{params}' in o for o in stage_outputs]):
+        post += '/' + param_id
 
-## nested module runner, dynamicly getting input/outputs (paths)
-for stage in get_benchmark_stages():
-    for module in get_modules_by_stage(stage):        
-        if not is_initial(stage) and not is_terminal(stage):
-            rule:
-                wildcard_constraints:
-                    # pre = '(.*\/.*)+',
-                    stage = '|'.join([re.escape(x) for x in get_benchmark_stages()]),
-                    # params = "default",
-                    id = '|'.join([re.escape(x) for x in get_initial_datasets()])
-                name: f"{{module}}_run_module".format(module = module)
-                output:
-                    format_output_templates_to_be_expanded(stage = stage, module = module)
-                script:
-                    op.join("src", "do_something.py")
+    if any(['{run}' in o for o in stage_outputs]):
+        post += '/' + run_id
 
-# start dynamic gatherer generator
-# for stage in stages:
-#     if not initial nor terminal:
-#         for module in modules:
-#             get param ranges
-#             get excludes
-#             expand rules accordingly
-
-# rule 'all (metrics)' start
-# for stage in stages:
-#     if stage is terminal:
-#         get inputs
-#         build rule with that
-# rule 'all' end
-# end
+    if converter.is_initial(stage):
+        rule:
+            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
+            wildcard_constraints:
+                stage=stage_id,
+                module=module_id,
+                params=param_id,
+                run=run_id,
+                name=module_id
+            output:
+                format_output_templates_to_be_expanded(stage_id,initial=True)
+                # "out/{stage}/{module}/{params}/{run}/{name}.txt.gz",
+                # "out/{stage}/{module}/{params}/{run}/{name}.meta.json",
+                # "out/{stage}/{module}/{params}/{run}/{name}_params.txt"
+            params:
+                parameters = node.parameters
+            script:
+                op.join('src','do_something.py')
+    else:
+        rule:
+            wildcard_constraints:
+                post=post,
+                stage=stage_id,
+                module=module_id,
+                name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
+            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
+            input:
+                lambda wildcards: format_input_templates_to_be_expanded(wildcards)
+            output:
+                format_output_templates_to_be_expanded(stage_id)
+                # "{pre}/{stage}/{module}/{params}/{run}/{name}.txt.gz",
+            params:
+                parameters = node.parameters
+            script:
+                op.join("src","do_something.py")
