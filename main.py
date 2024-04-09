@@ -34,6 +34,7 @@ if __name__ == "__main__":
             module = modules_in_stage[module_id]
             module_name = module['name']
             print('  Module', module_name)
+            print('    Repo:', converter.get_module_repository(module))
             print('    Excludes:', converter.get_module_excludes(module))
             print('    Params:', converter.get_module_parameters(module))
         print('------')

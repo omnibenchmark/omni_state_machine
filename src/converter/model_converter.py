@@ -72,6 +72,9 @@ class BenchmarkConverter(SnakemakeConverterTrait):
 
         return params
 
+    def get_module_repository(self, module):
+        return module.repo
+
     def is_initial(self, stage):
         if stage.initial:
             return stage.initial

@@ -31,6 +31,9 @@ class SnakemakeConverterTrait:
     def get_module_parameters(self, module):
         raise NotImplementedError("Method not implemented yet")
 
+    def get_module_repository(self, module):
+        raise NotImplementedError("Method not implemented yet")
+
     def is_initial(self, stage):
         raise NotImplementedError("Method not implemented yet")
 

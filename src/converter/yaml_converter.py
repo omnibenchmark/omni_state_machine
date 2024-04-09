@@ -36,6 +36,9 @@ class YamlConverter(SnakemakeConverterTrait):
 
         return params
 
+    def get_module_repository(self, module):
+        return module['repo']
+
     def get_module_excludes(self, module):
         excludes = None
         if 'exclude' in module.keys():
@@ -65,7 +68,7 @@ class YamlConverter(SnakemakeConverterTrait):
             all_stages_outputs = [self.get_stage_outputs(stage=stage_id) for stage_id in all_stages]
             all_stages_outputs = merge_dict_list(all_stages_outputs)
 
-            for in_deliverable in implicit_inputs[i]:
+            for in_deliverable in implicit_inputs:
                  # beware stage needs to be substituted
                 curr_output = all_stages_outputs[in_deliverable]
 
