@@ -9,8 +9,8 @@ import sys
 import os
 
 
-def do_something(in_dict, out_fn, params_dict, threads):
-    print('Processed', in_dict, 'to', out_fn, 'using params', params_dict, 'and threads', threads)
+def do_something(in_dict, out_fn, threads):
+    print('Processed', in_dict, 'to', out_fn, 'using threads', threads)
     print('  bench_iteration is', snakemake.bench_iteration)
     print('  resources are', snakemake.resources)
     print('  wildcards are', snakemake.wildcards)
@@ -26,5 +26,18 @@ for out in snakemake.output:
     with open(out, 'w') as sys.stdout:
         do_something(in_dict=snakemake.input,
                      out_fn=out,
-                     params_dict=snakemake.params,
                      threads=snakemake.threads)
+
+
+parameters = dict(snakemake.params)['parameters']
+if parameters is not None:
+    first_output = snakemake.output[0]
+    parent_dir = os.path.dirname(first_output)
+
+    params_file = os.path.join(parent_dir, 'parameters.txt')
+    with open(params_file, 'w') as params_file:
+        for param in parameters:
+            params_file.write(f'{param}\n')
+
+
+
