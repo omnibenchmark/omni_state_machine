@@ -1,6 +1,13 @@
 
 
 class SnakemakeConverterTrait:
+
+    def get_stage_id(self, stage):
+        raise NotImplementedError("Method not implemented yet")
+
+    def get_module_id(self, module):
+        raise NotImplementedError("Method not implemented yet")
+
     def get_benchmark_definition(self):
         raise NotImplementedError("Method not implemented yet")
 

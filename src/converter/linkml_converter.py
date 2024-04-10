@@ -2,19 +2,25 @@ from src.converter.converter import SnakemakeConverterTrait
 from src.helpers import merge_dict_list
 
 
-class BenchmarkConverter(SnakemakeConverterTrait):
+class LinkMLConverter(SnakemakeConverterTrait):
     def __init__(self, benchmark):
         self.benchmark = benchmark
 
     def get_benchmark_definition(self):
         return self.benchmark
 
+    def get_stage_id(self, stage):
+        return stage.id
+
+    def get_module_id(self, module):
+        return module.id
+
     def get_benchmark_stages(self):
         return dict([(x.id, x) for x in self.benchmark.steps])
 
     def get_benchmark_stage(self, stage_id):
-        stages = self.get_benchmark_stages()
-        return [stage for stage in stages if stage.id == stage_id]
+        stages = self.get_benchmark_stages().values()
+        return next(stage for stage in stages if stage.id == stage_id)
 
     def get_modules_by_stage(self, stage):
         return dict([(x.id, x) for x in stage.members])

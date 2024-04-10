@@ -12,6 +12,12 @@ class YamlConverter(SnakemakeConverterTrait):
     def get_benchmark_definition(self):
         return self.config
 
+    def get_stage_id(self, stage):
+        return stage['id']
+
+    def get_module_id(self, module):
+        return module['id']
+
     def get_benchmark_stages(self):
         return dict([(x['id'], x) for x in self.config['steps']])
 

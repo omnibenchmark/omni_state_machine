@@ -39,27 +39,24 @@ rule start_benchmark:
         cat /proc/1/cgroup >> {output.seed}        
         """
 
-stages = converter.get_benchmark_stages()
-for node in G.nodes:
+for node in nodes:
     stage_id = node.stage_id
     module_id = node.module_id
     param_id = node.param_id
     run_id = node.run_id
 
-    stage = stages[stage_id]
-    stage_outputs = converter.get_stage_outputs(stage).values()
-    # print('stage_id is', stage_id, 'and module_id is', module_id, 'is initial', converter.is_initial(stage))
+    outputs = node.get_outputs()
 
     post = stage_id + '/' + module_id
-    if any(['{params}' in o for o in stage_outputs]):
+    if any(['{params}' in o for o in outputs]):
         post += '/' + param_id
 
-    if any(['{run}' in o for o in stage_outputs]):
+    if any(['{run}' in o for o in outputs]):
         post += '/' + run_id
 
-    if converter.is_initial(stage):
+    if node.is_initial():
         rule:
-            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
+            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id, module=module_id, param=param_id, run=run_id)
             wildcard_constraints:
                 stage=stage_id,
                 module=module_id,
@@ -67,28 +64,27 @@ for node in G.nodes:
                 run=run_id,
                 name=module_id
             output:
-                format_output_templates_to_be_expanded(stage_id,initial=True)
+                format_output_templates_to_be_expanded(node)
                 # "out/{stage}/{module}/{params}/{run}/{name}.txt.gz",
                 # "out/{stage}/{module}/{params}/{run}/{name}.meta.json",
                 # "out/{stage}/{module}/{params}/{run}/{name}_params.txt"
             params:
-                parameters = node.parameters
+                parameters = node.get_parameters()
             script:
-                op.join('src','do_something.py')
+                'do_something.py'
     else:
         rule:
             wildcard_constraints:
                 post=post,
                 stage=stage_id,
-                module=module_id,
-                name='|'.join([re.escape(x) for x in converter.get_initial_datasets()]),
+                module=module_id
             name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
             input:
                 lambda wildcards: format_input_templates_to_be_expanded(wildcards)
             output:
-                format_output_templates_to_be_expanded(stage_id)
+                format_output_templates_to_be_expanded(node)
                 # "{pre}/{stage}/{module}/{params}/{run}/{name}.txt.gz",
             params:
-                parameters = node.parameters
+                parameters = node.get_parameters()
             script:
-                op.join("src","do_something.py")
+                'do_something.py'

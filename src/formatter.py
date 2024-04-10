@@ -1,17 +1,15 @@
 import re
 
-## f-strings: rule maker
-## wildcards (single curly bracket): expanded from the output mapper
-def format_output_templates_to_be_expanded(converter, stage_id, initial=False):
-    input_dirname = 'out' if initial else '{pre}'
-    stage_outputs = converter.get_stage_outputs(stage_id).values()
-    o = [x.replace('{input_dirname}', input_dirname) for x in stage_outputs]
 
-    if not initial:
-        o = [re.sub(r'\/.*\/', '/{post}/', x, count=1) for x in o]
+def format_output_templates_to_be_expanded(node):
+    outputs = node.get_outputs()
+    is_initial = node.is_initial()
 
-    # print(f'Output: {stage_id}: {o}')
-    return o
+    if not is_initial:
+        outputs = [re.sub(r'\/.*\/', '/{post}/', o, count=1) for o in outputs]
+
+    # print(f'Output: {node.stage_id}: {outputs}')
+    return outputs
 
 
 def extract_stages_from_path(path, known_stages):
@@ -56,13 +54,12 @@ def match_node_format(to_match):
 
 
 def match_input_module(input, stages, name):
-    expected_input_module = input.split('{input_dirname}/')[1].split('/{module}')[0]
+    expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
     matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
 
     if matching_stage:
         matched_module = matching_stage[1]
 
-        input = input.replace('{input_dirname}', '{pre}')
         input = input.replace('{module}', matched_module)
         input = input.replace('{name}', name)
         if '{params}' in input:
@@ -116,8 +113,7 @@ def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildca
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     assert matching_node is not None
 
-    node_implicit_inputs = matching_node.inputs
-    node_inputs = converter.get_stage_explicit_inputs(node_implicit_inputs).values()
+    node_inputs = matching_node.get_inputs()
 
     inputs = match_inputs(node_inputs, pre_stages, pre, name)
     for i in inputs:
