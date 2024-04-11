@@ -93,15 +93,11 @@ class Benchmark:
             if any(['{params}' in o for o in stage_outputs]):
                 current_path += f'/{head.param_id}'
 
-            if any(['{run}' in o for o in stage_outputs]):
-                current_path += f'/{head.run_id}'
-
             new_prefix = f'{prefix}/{current_path}'
             paths = [x.format(input_dirname=prefix,
                               stage=head.stage_id,
                               module=head.module_id,
                               params=head.param_id,
-                              run=head.run_id,
                               name='{name}') for x in stage_outputs]
 
             return paths + self._construct_output_paths(new_prefix, tail)

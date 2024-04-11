@@ -26,13 +26,13 @@ steps:
     outputs:
       - id: data.counts
         name: counts
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}.txt.gz"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
       - id: data.meta
         name: meta
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}.meta.json"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.meta.json"
       - id: data.data_specific_params
         name: data_specific_params
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}_params.txt"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}_params.txt"
 
   - id: process
     name: process
@@ -59,7 +59,7 @@ steps:
     outputs:
       - id: process.filtered
         name: filtered
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}.txt.gz"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
 
   - id: methods
     name: methods
@@ -80,11 +80,6 @@ steps:
           - D1
     inputs:
       - entries: [
-          data.counts,
-          data.meta,
-          data.data_specific_params
-        ]
-      - entries: [
           process.filtered,
           data.meta,
           data.data_specific_params
@@ -92,7 +87,7 @@ steps:
     outputs:
       - id: methods.mapping
         name: mapping
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}.model.out.gz"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
 
   - id: metrics
     name: metrics
@@ -118,4 +113,4 @@ steps:
     outputs:
       - id: metrics.mapping
         name: mapping
-        path: "{input_dirname}/{stage}/{module}/{params}/{run}/{name}.results.txt"
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.results.txt"

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 from src.model.node import BenchmarkNode
 
+
 def expend_stage_nodes(converter, stage, output_folder):
     nodes = []
 
@@ -22,11 +23,10 @@ def expend_stage_nodes(converter, stage, output_folder):
             parameters = [None]
 
         for param_id, param in enumerate(parameters):
-            for run_id, inputs in enumerate(inputs_for_stage):
-                run_id = None if len(inputs_for_stage) <= 1 else run_id
+            for inputs in inputs_for_stage:
                 inputs = converter.get_stage_explicit_inputs(inputs).values() if inputs else None
                 inputs = [x.replace('{input_dirname}', '{pre}') for x in inputs] if inputs else None
-                node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id, run_id)
+                node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id)
                 nodes.append(node)
 
     return nodes

@@ -42,15 +42,11 @@ def match_node_format(to_match):
     stage_id = to_match[0]
     module_id = to_match[1]
     if len(to_match) == 2:
-        param_id, run_id = 'default', 'run'
-    elif len(to_match) == 3:
-        param_id = to_match[2] if 'param_' in to_match[2] else 'default'
-        run_id = to_match[2] if 'run_' in to_match[2] else 'run'
+        param_id = 'default'
     else:
         param_id = to_match[2]
-        run_id = to_match[3]
 
-    return stage_id, module_id, param_id, run_id
+    return stage_id, module_id, param_id
 
 
 def match_input_module(input, stages, name):
@@ -65,10 +61,6 @@ def match_input_module(input, stages, name):
         if '{params}' in input:
             matched_params = next((x for x in matching_stage[2:] if 'param' or 'default' in x), None)
             input = input.replace('{params}', matched_params)
-
-        if '{run}' in input:
-            matched_run = next((x for x in matching_stage[2:] if 'run' in x), None)
-            input = input.replace('{run}', matched_run)
 
         return input
     else:
@@ -108,8 +100,8 @@ def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildca
 
     pre_stages = extract_stages_from_path(pre, converter.get_benchmark_stages())
 
-    stage_id, module_id, param_id, run_id = match_node_format(post)
-    node_hash = hash((stage_id, module_id, param_id, run_id))
+    stage_id, module_id, param_id = match_node_format(post)
+    node_hash = hash((stage_id, module_id, param_id))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     assert matching_node is not None
 
@@ -119,5 +111,5 @@ def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildca
     for i in inputs:
         assert i in output_paths
 
-    # print(f'Inputs: {stage_id} {module_id} {param_id} {run_id}: {inputs}')
+    # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
     return inputs

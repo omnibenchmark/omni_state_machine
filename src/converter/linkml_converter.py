@@ -46,7 +46,6 @@ class LinkMLConverter(SnakemakeConverterTrait):
                                       stage=stage_id,
                                       module='{module}',
                                       params='{params}',
-                                      run='{run}',
                                       name='{name}') for key, value in outputs.items()}
                 all_stages_outputs.append(outputs)
 

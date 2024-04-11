@@ -43,7 +43,6 @@ for node in nodes:
     stage_id = node.stage_id
     module_id = node.module_id
     param_id = node.param_id
-    run_id = node.run_id
 
     outputs = node.get_outputs()
 
@@ -51,23 +50,19 @@ for node in nodes:
     if any(['{params}' in o for o in outputs]):
         post += '/' + param_id
 
-    if any(['{run}' in o for o in outputs]):
-        post += '/' + run_id
-
     if node.is_initial():
         rule:
-            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id, module=module_id, param=param_id, run=run_id)
+            name: f"{{stage}}_{{module}}_{{param}}".format(stage=stage_id, module=module_id, param=param_id)
             wildcard_constraints:
                 stage=stage_id,
                 module=module_id,
                 params=param_id,
-                run=run_id,
                 name=module_id
             output:
                 format_output_templates_to_be_expanded(node)
-                # "out/{stage}/{module}/{params}/{run}/{name}.txt.gz",
-                # "out/{stage}/{module}/{params}/{run}/{name}.meta.json",
-                # "out/{stage}/{module}/{params}/{run}/{name}_params.txt"
+                # "out/{stage}/{module}/{params}/{name}.txt.gz",
+                # "out/{stage}/{module}/{params}/{name}.meta.json",
+                # "out/{stage}/{module}/{params}/{name}_params.txt"
             params:
                 parameters = node.get_parameters()
             script:
@@ -78,12 +73,12 @@ for node in nodes:
                 post=post,
                 stage=stage_id,
                 module=module_id
-            name: f"{{stage}}_{{module}}_{{param}}_{{run}}".format(stage=stage_id,module=module_id,param=param_id,run=run_id)
+            name: f"{{stage}}_{{module}}_{{param}}".format(stage=stage_id,module=module_id,param=param_id)
             input:
                 lambda wildcards: format_input_templates_to_be_expanded(wildcards)
             output:
                 format_output_templates_to_be_expanded(node)
-                # "{pre}/{stage}/{module}/{params}/{run}/{name}.txt.gz",
+                # "{pre}/{stage}/{module}/{params}/{name}.txt.gz",
             params:
                 parameters = node.get_parameters()
             script:
