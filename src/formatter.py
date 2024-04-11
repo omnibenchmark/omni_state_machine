@@ -99,9 +99,11 @@ def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildca
     name = wildcards.name
 
     pre_stages = extract_stages_from_path(pre, converter.get_benchmark_stages())
+    after_stage = pre_stages[-1][0] if len(pre_stages) > 0 else None
 
     stage_id, module_id, param_id = match_node_format(post)
-    node_hash = hash((stage_id, module_id, param_id))
+
+    node_hash = hash((stage_id, module_id, param_id, after_stage))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     assert matching_node is not None
 

@@ -2,6 +2,7 @@ from src.helpers import *
 from src.converter import LinkMLConverter
 from src.model.benchmark import Benchmark
 
+
 if __name__ == "__main__":
     benchmark_yaml = load_benchmark('data/Benchmark_001.yaml')
     converter = LinkMLConverter(benchmark_yaml)
@@ -42,8 +43,4 @@ if __name__ == "__main__":
     outputs_paths = sorted(benchmark.get_output_paths())
     print('All output paths:', outputs_paths)
 
-    # benchmark.plot_graph()
-
-    # print(benchmark.get_available_parameter('P2'))
-    # print(benchmark.get_explicit_outputs('data'))
-    # print(benchmark.get_explicit_inputs('methods'))
+    benchmark.plot_graph()

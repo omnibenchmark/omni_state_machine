@@ -80,6 +80,11 @@ steps:
           - D1
     inputs:
       - entries: [
+          data.counts,
+          data.meta,
+          data.data_specific_params
+        ]
+      - entries: [
           process.filtered,
           data.meta,
           data.data_specific_params

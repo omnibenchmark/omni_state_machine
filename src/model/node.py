@@ -3,7 +3,7 @@ class BenchmarkNode:
     def __init__(self, converter,
                  stage, module, parameters,
                  inputs, outputs,
-                 param_id):
+                 param_id, after=None):
 
         self.converter = converter
         self.stage = stage
@@ -11,6 +11,7 @@ class BenchmarkNode:
         self.parameters = parameters
         self.inputs = inputs
         self.outputs = outputs
+        self.after = after
 
         self.stage_id = converter.get_stage_id(stage)
         self.module_id = converter.get_module_id(module)
@@ -29,7 +30,9 @@ class BenchmarkNode:
         return self.converter.is_initial(self.stage)
 
     def __str__(self):
-        return f"BenchmarkNode({self.stage_id}, {self.module_id}, {self.param_id})"
+        node_str = f"BenchmarkNode({self.stage_id}, {self.module_id}, {self.param_id}"
+        node_str += f', after={self.after})' if self.after else ')'
+        return node_str
 
     def __repr__(self):
         return str(self)
@@ -41,4 +44,4 @@ class BenchmarkNode:
         return False
 
     def __hash__(self):
-        return hash((self.stage_id, self.module_id, self.param_id))
+        return hash((self.stage_id, self.module_id, self.param_id, self.after))

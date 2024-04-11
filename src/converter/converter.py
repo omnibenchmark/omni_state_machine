@@ -26,6 +26,9 @@ class SnakemakeConverterTrait:
     def get_stage_implicit_inputs(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
+    def get_inputs_stage(self, stage):
+        raise NotImplementedError("Method not implemented yet")
+
     def get_stage_explicit_inputs(self, stage):
         raise NotImplementedError("Method not implemented yet")
 

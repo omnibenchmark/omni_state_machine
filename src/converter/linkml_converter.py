@@ -34,6 +34,25 @@ class LinkMLConverter(SnakemakeConverterTrait):
 
         return [input.entries for input in stage.inputs]
 
+    def get_inputs_stage(self, implicit_inputs):
+        stages_map = {key: None for key in implicit_inputs}
+        if implicit_inputs is not None:
+            all_stages = self.get_benchmark_stages()
+            all_stages_outputs = []
+            for stage_id in all_stages:
+                outputs = self.get_stage_outputs(stage=stage_id)
+                outputs = {key: stage_id for key, value in outputs.items()}
+                all_stages_outputs.append(outputs)
+
+            all_stages_outputs = merge_dict_list(all_stages_outputs)
+            for in_deliverable in implicit_inputs:
+                # beware stage needs to be substituted
+                curr_output = all_stages_outputs[in_deliverable]
+
+                stages_map[in_deliverable] = curr_output
+
+        return stages_map
+
     def get_stage_explicit_inputs(self, implicit_inputs):
         explicit = {key: None for key in implicit_inputs}
         if implicit_inputs is not None:
@@ -42,11 +61,13 @@ class LinkMLConverter(SnakemakeConverterTrait):
             for stage_id in all_stages:
                 outputs = self.get_stage_outputs(stage=stage_id)
                 outputs = {
-                    key: value.format(input_dirname='{input_dirname}',
-                                      stage=stage_id,
-                                      module='{module}',
-                                      params='{params}',
-                                      name='{name}') for key, value in outputs.items()}
+                    key: value.format(
+                        input_dirname='{input_dirname}',
+                        stage=stage_id,
+                        module='{module}',
+                        params='{params}',
+                        name='{name}') for key, value in outputs.items()
+                }
                 all_stages_outputs.append(outputs)
 
             all_stages_outputs = merge_dict_list(all_stages_outputs)

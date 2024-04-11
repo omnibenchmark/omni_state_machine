@@ -24,9 +24,12 @@ def expend_stage_nodes(converter, stage, output_folder):
 
         for param_id, param in enumerate(parameters):
             for inputs in inputs_for_stage:
+                input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
+                required_input_stage = sorted(list(input_stages))[-1] if inputs else None  # TODO Fix order of stages
                 inputs = converter.get_stage_explicit_inputs(inputs).values() if inputs else None
                 inputs = [x.replace('{input_dirname}', '{pre}') for x in inputs] if inputs else None
-                node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id)
+                node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id,
+                                     after=required_input_stage)
                 nodes.append(node)
 
     return nodes
@@ -35,23 +38,19 @@ def expend_stage_nodes(converter, stage, output_folder):
 def build_dag_from_definition(converter, output_folder):
     g = nx.DiGraph()
     stages = converter.get_benchmark_stages()
+    stage_nodes_map = {}
     for stage_id in stages:
         stage = stages[stage_id]
         nodes = expend_stage_nodes(converter, stage, output_folder)
         g.add_nodes_from(nodes)
+        stage_nodes_map[stage_id] = nodes
 
-    for stage_id in stages:
-        stage = stages[stage_id]
-        after_stage_ids = converter.get_after(stage)
-        if after_stage_ids and len(after_stage_ids) > 0:
-            for departure_stage_id in after_stage_ids:
-                departure_stage = stages[departure_stage_id]
-                departure_stage_nodes = expend_stage_nodes(converter, departure_stage, output_folder)
-                current_stage_nodes = expend_stage_nodes(converter, stage, output_folder)
-
-                for departure_stage_node in departure_stage_nodes:
-                    for current_stage_node in current_stage_nodes:
-                        g.add_edge(departure_stage_node, current_stage_node)
+    for current_node in g.nodes:
+        after_stage = current_node.after
+        if after_stage:
+            departure_stage_nodes = stage_nodes_map[after_stage]
+            for departure_stage_node in departure_stage_nodes:
+                g.add_edge(departure_stage_node, current_node)
 
     return g
 
