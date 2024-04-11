@@ -4,6 +4,7 @@ from src.helpers import merge_dict_list
 
 class LinkMLConverter(SnakemakeConverterTrait):
     def __init__(self, benchmark):
+        super().__init__()
         self.benchmark = benchmark
 
     def get_benchmark_definition(self):
@@ -115,5 +116,3 @@ class LinkMLConverter(SnakemakeConverterTrait):
 
     def get_after(self, stage):
         return stage.after
-
-

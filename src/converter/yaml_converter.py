@@ -7,6 +7,7 @@ from src.converter.converter import SnakemakeConverterTrait
 
 class YamlConverter(SnakemakeConverterTrait):
     def __init__(self, config):
+        super().__init__()
         self.config = config
 
     def get_benchmark_definition(self):

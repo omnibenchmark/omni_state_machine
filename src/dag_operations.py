@@ -24,12 +24,12 @@ def expend_stage_nodes(converter, stage, output_folder):
 
         for param_id, param in enumerate(parameters):
             for inputs in inputs_for_stage:
-                input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
-                required_input_stage = sorted(list(input_stages))[-1] if inputs else None  # TODO Fix order of stages
+                required_input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
+                most_recent_input_stage = sorted(list(required_input_stages), key=converter.stage_order)[-1] if inputs else None
                 inputs = converter.get_stage_explicit_inputs(inputs).values() if inputs else None
                 inputs = [x.replace('{input_dirname}', '{pre}') for x in inputs] if inputs else None
                 node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id,
-                                     after=required_input_stage)
+                                     after=most_recent_input_stage)
                 nodes.append(node)
 
     return nodes
