@@ -36,8 +36,11 @@ if parameters is not None:
 
     params_file = os.path.join(parent_dir, 'parameters.txt')
     with open(params_file, 'w') as params_file:
-        for param in parameters:
-            params_file.write(f'{param}\n')
+        params_file.write(f'{parameters}')
+
+    param_dict_file = os.path.join(parent_dir, '..', 'parameters_dict.txt')
+    with open(param_dict_file, 'a') as param_dict_file:
+        param_dict_file.write(f'{os.path.basename(parent_dir)} {parameters}\n')
 
 
 
