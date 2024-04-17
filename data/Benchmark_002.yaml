@@ -1,0 +1,143 @@
+---
+id: Benchmark_002
+name: starts_to_be_explicit
+description: simple benchmark, somewhat explicit, simple params
+version: 1.0
+platform: https://github.com/
+storage: https://storage.github.com/
+orchestrator:
+  name: orchestrator
+  url: https://github.com/omnibenchmark/test/orchestrator
+validator:
+  name: validator
+  url: https://github.com/omnibenchmark/test/validator
+  schema_url: https://github.com/omnibenchmark/omni_essentials
+steps:
+  - id: data
+    name: data
+    initial: true
+    members:
+      - id: libd_DLPFC
+        name: libd_DLPFC
+        repo: omnibenchmark/test/libd_DLPFC
+    outputs:
+      - id: data.counts
+        name: counts
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+      - id: data.meta
+        name: meta
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.meta.json"
+      - id: data.label
+        name: label
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.label.json"
+      - id: data.coord
+        name: coordinates
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.coord.json"
+      - id: data.ncluster
+        name: data_num_cluster
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}_ncluster.txt"
+
+  - id: normalization
+    name: normalization
+    after:
+      - data
+    members:
+      - id: lognorm
+        name: lognorm
+        repo: omnibenchmark/test/lognorm
+    inputs:
+      - entries: [
+          data.counts,
+          data.meta
+        ]
+    outputs:
+      - id: data.normalized
+        name: normalized
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: select_counts
+    name: feature_selection_counts
+    after:
+      - normalization
+    members:
+      - id: scanpy
+        name: scanpy
+        repo: omnibenchmark/test/scanpy
+      - id: seurat
+        name: seurat
+        repo: omnibenchmark/test/seurat
+    inputs:
+      - entries: [
+          data.counts,
+          data.meta
+        ]
+    outputs:
+      - id: feature.selected
+        name: selected
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: select_lognorm
+    name: feature_selection_lognorm
+    after:
+      - normalization
+    members:
+      - id: moran
+        name: moran
+        repo: omnibenchmark/test/moran
+        exclude: [select_counts]
+      - id: scran
+        name: scran
+        repo: omnibenchmark/test/scran
+        exclude: [select_counts]
+    inputs:
+      - entries: [
+          data.normalized,
+          data.meta,
+          data.coord
+        ]
+    outputs:
+      - id: feature.selected
+        name: selected
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: dimred
+    name: PCA
+    after:
+      - select_counts
+      - select_lognorm
+    members:
+      - id: sklearn
+        name: sklearn
+        repo: omnibenchmark/test/sklearn
+        parameters:
+          - values: ["-scale false"]
+    inputs:
+      - entries: [
+          data.normalized,
+          data.meta,
+          data.coord,
+          feature.selected
+          ]
+    outputs:
+      - id: pca.matrix
+        name: dimensionality_reduction
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: methods
+    name: methods
+    after:
+      - dimred
+    members:
+      - id: BayesSpace
+        name: BayesSpace
+        repo: omnibenchmark/test/BayesSpace
+    inputs:
+      - entries: [
+          data.meta,
+          data.ncluster,
+          pca.matrix
+        ]
+    outputs:
+      - id: methods.label
+        name: labeling
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
