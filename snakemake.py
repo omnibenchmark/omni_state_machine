@@ -3,6 +3,7 @@ from src.helpers import *
 import src.formatter as fmt
 from src.model import Benchmark
 
+
 benchmark_yaml = load_benchmark('data/Benchmark_002.yaml')
 converter = LinkMLConverter(benchmark_yaml)
 benchmark = Benchmark(converter)

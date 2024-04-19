@@ -2,6 +2,10 @@ from src.helpers import *
 from src.converter import LinkMLConverter
 from src.model.benchmark import Benchmark
 
+##
+## This is used just for testing the omni_workflow module
+## Snakemake file generation happens in Snakefile and snakemake.py
+##
 
 if __name__ == "__main__":
     benchmark_yaml = load_benchmark('data/Benchmark_001.yaml')

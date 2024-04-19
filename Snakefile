@@ -12,8 +12,6 @@ import os.path as op
 
 include: 'snakemake.py'
 
-configfile: op.join('data', 'Benchmark_001.yaml')
-
 rule all:
     input:
         all_paths,
