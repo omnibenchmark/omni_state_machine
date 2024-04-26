@@ -2,13 +2,17 @@ from src.helpers import *
 from src.converter import LinkMLConverter
 from src.model.benchmark import Benchmark
 
+import os
+import argparse
+
 ##
 ## This is used just for testing the omni_workflow module
 ## Snakemake file generation happens in Snakefile and snakemake.py
 ##
 
-if __name__ == "__main__":
-    benchmark_yaml = load_benchmark('data/Benchmark_001.yaml')
+
+def main(benchmark_file):
+    benchmark_yaml = load_benchmark(benchmark_file)
     converter = LinkMLConverter(benchmark_yaml)
     benchmark = Benchmark(converter)
     print(benchmark.get_definition())
@@ -48,3 +52,17 @@ if __name__ == "__main__":
     print('All output paths:', outputs_paths)
 
     benchmark.plot_graph()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Test OmniWorkflow converter.')
+    parser.add_argument('--benchmark_file', default='data/Benchmark_001',
+                        type=str, help='Location of the benchmark file')
+
+    args = parser.parse_args()
+    benchmark_file = args.benchmark_file
+
+    if os.path.exists(benchmark_file):
+        main(benchmark_file)
+    else:
+        print(f'Benchmark file {benchmark_file} does not exist.')
