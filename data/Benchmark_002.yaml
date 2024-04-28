@@ -72,7 +72,7 @@ steps:
           data.meta
         ]
     outputs:
-      - id: feature.selected
+      - id: select_counts.selected
         name: selected
         path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
 
@@ -96,7 +96,7 @@ steps:
           data.coord
         ]
     outputs:
-      - id: feature.selected
+      - id: select_lognorm.selected
         name: selected
         path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
 
@@ -116,7 +116,7 @@ steps:
           data.normalized,
           data.meta,
           data.coord,
-          feature.selected
+          select_counts.selected
           ]
     outputs:
       - id: pca.matrix

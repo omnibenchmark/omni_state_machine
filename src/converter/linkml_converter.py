@@ -116,3 +116,22 @@ class LinkMLConverter(SnakemakeConverterTrait):
 
     def get_after(self, stage):
         return stage.after
+
+    def get_stage_ids(self):
+        return [x.id for x in self.benchmark.steps]
+
+    def get_module_ids(self):
+        module_ids = []
+        for stage in self.benchmark.steps:
+            for module in stage.members:
+                module_ids.append(module.id)
+
+        return module_ids
+
+    def get_output_ids(self):
+        output_ids = []
+        for stage in self.benchmark.steps:
+            for output in stage.outputs:
+                output_ids.append(output.id)
+
+        return output_ids

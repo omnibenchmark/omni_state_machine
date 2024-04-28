@@ -5,6 +5,9 @@ from src.model.benchmark import Benchmark
 import os
 import argparse
 
+from src.validation import Validator, ValidationError
+
+
 ##
 ## This is used just for testing the omni_workflow module
 ## Snakemake file generation happens in Snakefile and snakemake.py
@@ -14,6 +17,8 @@ import argparse
 def main(benchmark_file):
     benchmark_yaml = load_benchmark(benchmark_file)
     converter = LinkMLConverter(benchmark_yaml)
+    validator = Validator()
+    converter = validator.validate(converter)
     benchmark = Benchmark(converter)
     print(benchmark.get_definition())
 
@@ -63,6 +68,10 @@ if __name__ == "__main__":
     benchmark_file = args.benchmark_file
 
     if os.path.exists(benchmark_file):
-        main(benchmark_file)
+        try:
+            main(benchmark_file)
+        except ValidationError as e:
+            print(f"Validation failed: \n {e}")
+
     else:
         print(f'Benchmark file {benchmark_file} does not exist.')

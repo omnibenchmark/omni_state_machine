@@ -53,6 +53,15 @@ class SnakemakeConverterTrait:
     def get_after(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
+    def get_stage_ids(self):
+        raise NotImplementedError("Method not implemented yet")
+
+    def get_module_ids(self):
+        raise NotImplementedError("Method not implemented yet")
+
+    def get_output_ids(self):
+        raise NotImplementedError("Method not implemented yet")
+
     def get_initial_datasets(self):
         stages = self.get_benchmark_stages()
         for stage_id in stages:
