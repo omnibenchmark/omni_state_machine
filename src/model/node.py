@@ -22,8 +22,24 @@ class BenchmarkNode:
     def get_inputs(self):
         return self.inputs
 
+    def get_input_paths(self):
+        input_paths = []
+        for input in self.get_inputs():
+            input = os.path.basename(input).format(name='input')
+            input_paths.append(os.path.join('in', input))
+
+        return input_paths
+
     def get_outputs(self):
         return self.outputs
+
+    def get_output_paths(self):
+        output_paths = []
+        for output in self.get_outputs():
+            output = os.path.basename(output).format(name='output')
+            output_paths.append(os.path.join('out', output))
+
+        return output_paths
 
     def get_parameters(self):
         return self.parameters

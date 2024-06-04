@@ -63,6 +63,9 @@ def main(benchmark_file):
     workflow.serialize_workflow()
 
 
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test OmniWorkflow converter.')
     parser.add_argument('--benchmark_file', default='data/Benchmark_001',
