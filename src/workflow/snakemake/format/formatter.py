@@ -12,16 +12,41 @@ def format_output_templates_to_be_expanded(node):
     return outputs
 
 
-def extract_stages_from_path(path, known_stages):
+def format_input_templates_to_be_expanded(benchmark, wildcards):
+    pre = wildcards.pre
+    post = wildcards.post
+    name = wildcards.name
+
+    nodes = benchmark.get_nodes()
+    stage_ids = set([node.stage_id for node in nodes])
+
+    pre_stages = _extract_stages_from_path(pre, stage_ids)
+    after_stage = pre_stages[-1][0] if len(pre_stages) > 0 else None
+
+    stage_id, module_id, param_id = _match_node_format(post)
+
+    node_hash = hash((stage_id, module_id, param_id, after_stage))
+    matching_node = next((node for node in nodes if hash(node) == node_hash), None)
+    assert matching_node is not None
+
+    node_inputs = matching_node.get_inputs()
+
+    inputs = _match_inputs(node_inputs, pre_stages, pre, name)
+
+    # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
+    return inputs
+
+
+def _extract_stages_from_path(path, known_stage_ids):
     parts = path.split('/')
     stages = []
 
     i = 1
     while i < len(parts) - 1:
-        if parts[i] in known_stages:
+        if parts[i] in known_stage_ids:
             j = i+1
 
-            while j < len(parts) and parts[j] not in known_stages:
+            while j < len(parts) and parts[j] not in known_stage_ids:
                 j += 1
 
             sub_parts = parts[i:j]
@@ -35,7 +60,7 @@ def extract_stages_from_path(path, known_stages):
     return stages
 
 
-def match_node_format(to_match):
+def _match_node_format(to_match):
     if type(to_match) is str:
         to_match = to_match.split('/')
 
@@ -49,7 +74,7 @@ def match_node_format(to_match):
     return stage_id, module_id, param_id
 
 
-def match_input_module(input, stages, name):
+def _match_input_module(input, stages, name):
     expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
     matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
 
@@ -68,7 +93,7 @@ def match_input_module(input, stages, name):
         return None
 
 
-def match_input_prefix(input, pre):
+def _match_input_prefix(input, pre):
     stage = f'/{input.split("/")[1]}'
     matched_prefix = pre.split(stage)[0]
     formatted_input = input.format(pre=matched_prefix)
@@ -77,41 +102,17 @@ def match_input_prefix(input, pre):
     return formatted_input
 
 
-def match_inputs(inputs, stages, pre, name):
+def _match_inputs(inputs, stages, pre, name):
     all_matched = True
 
     formatted_inputs = []
     for input in inputs:
-        formatted_input = match_input_module(input, stages, name)
+        formatted_input = _match_input_module(input, stages, name)
         if not formatted_input:
             all_matched = False
             break
         else:
-            formatted_input = match_input_prefix(formatted_input, pre)
+            formatted_input = _match_input_prefix(formatted_input, pre)
             formatted_inputs.append(formatted_input)
 
     return formatted_inputs if all_matched else []
-
-
-def format_input_templates_to_be_expanded(converter, nodes, output_paths, wildcards):
-    pre = wildcards.pre
-    post = wildcards.post
-    name = wildcards.name
-
-    pre_stages = extract_stages_from_path(pre, converter.get_benchmark_stages())
-    after_stage = pre_stages[-1][0] if len(pre_stages) > 0 else None
-
-    stage_id, module_id, param_id = match_node_format(post)
-
-    node_hash = hash((stage_id, module_id, param_id, after_stage))
-    matching_node = next((node for node in nodes if hash(node) == node_hash), None)
-    assert matching_node is not None
-
-    node_inputs = matching_node.get_inputs()
-
-    inputs = match_inputs(node_inputs, pre_stages, pre, name)
-    for i in inputs:
-        assert i in output_paths
-
-    # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
-    return inputs

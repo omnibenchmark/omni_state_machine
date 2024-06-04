@@ -1,6 +1,6 @@
 
 
-class SnakemakeConverterTrait:
+class ConverterTrait:
 
     def __init__(self):
         self.stage_order_map = None

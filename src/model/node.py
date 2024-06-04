@@ -1,3 +1,5 @@
+import os.path
+
 
 class BenchmarkNode:
     def __init__(self, converter,
@@ -28,6 +30,9 @@ class BenchmarkNode:
 
     def is_initial(self):
         return self.converter.is_initial(self.stage)
+
+    def get_stage(self):
+        return self.stage
 
     def __str__(self):
         node_str = f"BenchmarkNode({self.stage_id}, {self.module_id}, {self.param_id}"

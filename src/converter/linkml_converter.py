@@ -1,8 +1,8 @@
-from src.converter.converter import SnakemakeConverterTrait
-from src.helpers import merge_dict_list
+from src.converter.converter import ConverterTrait
+from src.utils.helpers import merge_dict_list
 
 
-class LinkMLConverter(SnakemakeConverterTrait):
+class LinkMLConverter(ConverterTrait):
     def __init__(self, benchmark):
         super().__init__()
         self.benchmark = benchmark

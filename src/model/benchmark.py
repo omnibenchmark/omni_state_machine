@@ -1,5 +1,5 @@
-import src.dag_operations as dag
-from src.helpers import *
+import src.model.dag_operations as dag
+from src.utils.helpers import *
 
 
 class Benchmark:
