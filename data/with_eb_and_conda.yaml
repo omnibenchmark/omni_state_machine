@@ -1,0 +1,244 @@
+---
+id: peiying_with_easyconfigs
+name: easyconfigs and conda
+description: peiying's fixed yaml plus soft environments
+version: 1.0
+platform: https://github.com/
+storage: https://storage.github.com/
+orchestrator:
+  name: orchestrator
+  url: https://github.com/omnibenchmark/test/orchestrator
+validator:
+  name: validator
+  url: https://github.com/omnibenchmark/test/validator
+  schema_url: https://github.com/omnibenchmark/omni_essentials
+steps:
+  - id: data
+    name: data
+    initial: true
+    members:
+      - id: libd_DLPFC
+        name: libd_DLPFC
+        envmodules: "R/4.3.3-gfbf-2023b"
+        conda: "R_433.yaml"
+        repo: omnibenchmark/test/libd_DLPFC
+    outputs:
+      - id: data.counts
+        name: counts
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+      - id: data.meta
+        name: meta
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.meta.json"
+      - id: data.label
+        name: label
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.label.json"
+      - id: data.coord
+        name: coordinates
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.coord.json"
+      - id: data.ncluster
+        name: data_num_cluster
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}_ncluster.txt"
+
+  - id: QC
+    name: quality control
+    after:
+      - data
+    members:
+      - id: filter
+        name: filter
+        envmodules: "R/4.3.3-gfbf-2023b"
+        conda: "R_433.yaml"
+        repo: omnibenchmark/test/filter
+    inputs:
+      - entries: [
+          data.counts,
+          data.meta
+        ]
+    outputs:
+      - id: qc.filtered
+        name: filtered
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: normalization
+    name: normalization
+    after:
+      - QC
+    members:
+      - id: lognorm
+        name: lognorm
+        envmodules: "R/4.3.3-gfbf-2023b"
+        conda: "R_433.yaml"
+        repo: omnibenchmark/test/lognorm
+    inputs:
+      - entries: [
+          qc.filtered
+        ]
+    outputs:
+      - id: normalization.counts
+        name: normalized
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: selection
+    name: feature_selection_counts
+    after:
+      - QC
+    members:
+      - id: scanpy
+        name: scanpy
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/scanpy
+    inputs:
+      - entries: [
+          qc.filtered
+        ]
+    outputs:
+      - id: selection.counts
+        name: selected
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: selection_lognorm
+    name: feature_selection_lognorm
+    after:
+      - normalization
+    members:
+      - id: moranI
+        name: moranI
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/moranI
+        exclude: [selection]
+    inputs:
+      - entries: [
+          normalization.counts,
+          data.meta,
+          data.coord
+        ]
+    outputs:
+      - id: selection_lognorm.counts
+        name: selected
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: dimred
+    name: PCA
+    after:
+      - selection
+      - selection_lognorm
+    members:
+      - id: sklearn
+        name: sklearn
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/sklearn
+        parameters:
+          - values: ["-n_PCs 15"]
+          - values: ["-n_PCs 20"]
+    inputs:
+      - entries: [
+          qc.filtered,
+          data.meta,
+          data.coord,
+          selection.counts
+          ]
+      - entries: [
+          normalization.counts,
+          data.meta,
+          data.coord,
+          selection_lognorm.counts
+          ]
+    outputs:
+      - id: dimred.matrix
+        name: dimensionality_reduction
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+
+  - id: methods_counts
+    name: methods_counts
+    after:
+      - selection
+    members:
+      - id: BANKSY
+        name: BANKSY
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/BANKSY
+    inputs:
+      - entries: [
+          data.meta,
+          data.ncluster,
+          selection.counts
+        ]
+    outputs:
+      - id: methods.from_counts
+        name: labeling
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+
+  - id: methods_lognorm
+    name: methods_lognorm
+    after:
+      - selection_lognorm
+    members:
+      - id: SpaGCN
+        name: SpaGCN
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/SpaGCN
+    inputs:
+      - entries: [
+          data.meta,
+          data.ncluster,
+          selection_lognorm.counts
+        ]
+    outputs:
+      - id: methods.from_lognorm
+        name: labeling
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+
+  - id: methods_dimred
+    name: methods_dimred
+    after:
+      - dimred
+    members:
+      - id: BayesSpace
+        name: BayesSpace
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/BayesSpace
+    inputs:
+      - entries: [
+          data.meta,
+          data.ncluster,
+          dimred.matrix
+        ]
+    outputs:
+      - id: methods.from_dimred
+        name: labeling
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+
+  - id: metrics
+    name: metrics
+    after:
+      - methods
+    terminal: true
+    members:
+      - id: ARI
+        name: ARI
+        envmodules: "sklearn-pandas/2.2.0-foss-2021b"
+        conda: "sklearn-pandas.yaml"
+        repo: omnibenchmark/test/ARI
+    inputs:
+      - entries: [
+          methods.from_counts,
+          data.label
+      ]
+      - entries: [
+          methods.from_lognorm,
+          data.label
+      ]
+      - entries: [
+          methods.from_dimred,
+          data.label
+      ]
+    outputs:
+      - id: metrics.results
+        name: metrics results
+        path: "{input_dirname}/{stage}/{module}/{params}/{name}.results.txt"
