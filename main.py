@@ -59,8 +59,8 @@ def main(benchmark_file):
     benchmark.plot_graph()
 
     # Serialize workflow to Snakefile
-    workflow = SnakemakeEngine(benchmark)
-    workflow.serialize_workflow()
+    workflow = SnakemakeEngine()
+    workflow.serialize_workflow(benchmark)
 
 
 

@@ -1,3 +1,4 @@
+from src.model import Benchmark, BenchmarkNode
 from src.workflow.workflow import WorkflowEngine
 from src.workflow.snakemake import rules
 import os
@@ -14,19 +15,19 @@ INCLUDES = [
 
 
 class SnakemakeEngine(WorkflowEngine):
-    def __init__(self, benchmark):
-        super().__init__(benchmark)
+    def __init__(self):
+        super().__init__()
 
-    def run_workflow(self):
+    def run_workflow(self, benchmark: Benchmark):
         raise NotImplementedError("Method not implemented yet")
 
-    def serialize_workflow(self, output_path=os.getcwd()):
+    def serialize_workflow(self, benchmark: BenchmarkNode, output_path=os.getcwd()):
         os.makedirs(output_path, exist_ok=True)
 
         # Dump benchmark pickle file
         benchmark_path = os.path.join(output_path, "benchmark.pkl")
         with open(benchmark_path, "wb") as f:
-            pickle.dump(self.benchmark, f)
+            pickle.dump(benchmark, f)
 
         # Serialize Snakemake file
         snakefile_path = os.path.join(output_path, 'Snakefile')
