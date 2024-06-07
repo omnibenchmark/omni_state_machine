@@ -21,7 +21,7 @@ class SnakemakeEngine(WorkflowEngine):
     def run_workflow(self, benchmark: Benchmark):
         raise NotImplementedError("Method not implemented yet")
 
-    def serialize_workflow(self, benchmark: BenchmarkNode, output_path=os.getcwd()):
+    def serialize_workflow(self, benchmark: Benchmark, output_path=os.getcwd()):
         os.makedirs(output_path, exist_ok=True)
 
         # Dump benchmark pickle file
@@ -49,10 +49,10 @@ class SnakemakeEngine(WorkflowEngine):
 
         return snakefile_path
 
-    def run_node_workflow(self, node):
+    def run_node_workflow(self, node: BenchmarkNode):
         raise NotImplementedError("Method not implemented yet")
 
-    def serialize_node_workflow(self, node, output_path=os.getcwd()):
+    def serialize_node_workflow(self, node: BenchmarkNode, output_path=os.getcwd()):
         os.makedirs(output_path, exist_ok=True)
 
         # Dump benchmark pickle file
