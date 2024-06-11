@@ -1,9 +1,12 @@
 import re
+from typing import List, Set, Tuple
 
-from src.model import BenchmarkNode
+from src.model import BenchmarkNode, Benchmark
 
 
-def format_output_templates_to_be_expanded(node):
+def format_output_templates_to_be_expanded(node: BenchmarkNode):
+    """Formats node outputs that will be expanded according to Snakemake's engine"""
+
     outputs = node.get_outputs()
     is_initial = node.is_initial()
 
@@ -14,7 +17,9 @@ def format_output_templates_to_be_expanded(node):
     return outputs
 
 
-def format_input_templates_to_be_expanded(benchmark, wildcards):
+def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards):
+    """Formats benchmark inputs that will be expanded according to Snakemake's engine"""
+
     pre = wildcards.pre
     post = wildcards.post
     name = wildcards.name
@@ -39,7 +44,7 @@ def format_input_templates_to_be_expanded(benchmark, wildcards):
     return inputs
 
 
-def _extract_stages_from_path(path, known_stage_ids):
+def _extract_stages_from_path(path: str, known_stage_ids: Set[str]):
     parts = path.split('/')
     stages = []
 
@@ -62,7 +67,7 @@ def _extract_stages_from_path(path, known_stage_ids):
     return stages
 
 
-def _match_node_format(to_match):
+def _match_node_format(to_match: str):
     if type(to_match) is str:
         to_match = to_match.split('/')
 
@@ -76,7 +81,7 @@ def _match_node_format(to_match):
     return stage_id, module_id, param_id
 
 
-def _match_input_module(input, stages, name):
+def _match_input_module(input: str, stages: List[Tuple[str]], name: str):
     expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
     matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
 
@@ -95,7 +100,7 @@ def _match_input_module(input, stages, name):
         return None
 
 
-def _match_input_prefix(input, pre):
+def _match_input_prefix(input: str, pre: str):
     stage = f'/{input.split("/")[1]}'
     matched_prefix = pre.split(stage)[0]
     formatted_input = input.format(pre=matched_prefix)
@@ -104,7 +109,7 @@ def _match_input_prefix(input, pre):
     return formatted_input
 
 
-def _match_inputs(inputs, stages, pre, name):
+def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, name: str):
     all_matched = True
 
     formatted_inputs = []

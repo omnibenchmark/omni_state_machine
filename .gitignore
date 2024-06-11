@@ -318,3 +318,6 @@ tutorial/*
 
 .out/
 .log/
+
+output_dag.png
+Snakefile

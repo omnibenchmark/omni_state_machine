@@ -7,9 +7,12 @@
 
 import sys
 import os
+from typing import List
+
+from snakemake.script import Snakemake
 
 
-def mock_execution(inputs, output, snakemake):
+def mock_execution(inputs: List[str], output: str, snakemake: Snakemake):
     print('Processed', inputs, 'to', output, 'using threads', snakemake.threads)
     print('  bench_iteration is', snakemake.bench_iteration)
     print('  resources are', snakemake.resources)
@@ -19,7 +22,7 @@ def mock_execution(inputs, output, snakemake):
     print('  params are', snakemake.params)
 
 
-def dump_parameters_to_file(output_dir, parameters):
+def dump_parameters_to_file(output_dir: str, parameters: str):
     if parameters is not None:
         params_file = os.path.join(output_dir, 'parameters.txt')
         with open(params_file, 'w') as params_file:
@@ -31,6 +34,7 @@ def dump_parameters_to_file(output_dir, parameters):
 
 
 try:
+    snakemake: Snakemake = snakemake
     parameters = dict(snakemake.params)['parameters']
     output_dir = os.path.dirname(snakemake.output[0])
     os.makedirs(output_dir, exist_ok=True)

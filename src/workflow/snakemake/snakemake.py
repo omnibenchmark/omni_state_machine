@@ -1,5 +1,5 @@
-import argparse
 import os
+from typing import TextIO, List
 
 from src.model import Benchmark, BenchmarkNode
 from src.workflow.workflow import WorkflowEngine
@@ -8,7 +8,7 @@ from snakemake.cli import main as snakemake_cli
 
 from datetime import datetime
 
-# Define includes
+# Module includes for each Snakefile
 INCLUDES = [
     "utils.smk",
     "rule_start_benchmark.smk",
@@ -18,11 +18,23 @@ INCLUDES = [
 
 
 class SnakemakeEngine(WorkflowEngine):
-    def __init__(self):
-        super().__init__()
+    """Snakemake implementation of the WorkflowEngine interface."""
 
     def run_workflow(self, benchmark: Benchmark, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
                      **snakemake_kwargs):
+        """
+        Serializes & runs benchmark workflow using snakemake.
+
+        Args:
+            benchmark (Benchmark): benchmark to run
+            cores (int): number of cores to run
+            dryrun (bool): validate the snakemake workflow with the benchmark without actual execution
+            work_dir (str): working directory
+            **snakemake_kwargs: keyword arguments to pass to the snakemake engine
+
+        Returns:
+        - Status code of the workflow run.
+        """
 
         # Serialize Snakefile for workflow
         snakefile = self.serialize_workflow(benchmark, work_dir)
@@ -36,6 +48,16 @@ class SnakemakeEngine(WorkflowEngine):
         return success
 
     def serialize_workflow(self, benchmark: Benchmark, output_dir: str = os.getcwd()):
+        """
+        Serializes a Snakefile for the benchmark.
+
+        Args:
+            benchmark (Benchmark): benchmark to serialize
+            output_dir (str): output directory for the Snakefile
+
+        Returns:
+        - Snakefile path.
+        """
         os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = benchmark.get_definition_file()
@@ -62,6 +84,19 @@ class SnakemakeEngine(WorkflowEngine):
 
     def run_node_workflow(self, node: BenchmarkNode, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
                           **snakemake_kwargs):
+        """
+        Serializes & runs benchmark node workflow using snakemake.
+
+        Args:
+            node (Benchmark): benchmark node to run
+            cores (int): number of cores to run
+            dryrun (bool): validate the snakemake workflow with the benchmark without actual execution
+            work_dir (str): working directory
+            **snakemake_kwargs: keyword arguments to pass to the snakemake engine
+
+        Returns:
+        - Status code of the workflow run.
+        """
 
         os.makedirs(work_dir, exist_ok=True)
 
@@ -76,7 +111,17 @@ class SnakemakeEngine(WorkflowEngine):
 
         return success
 
-    def serialize_node_workflow(self, node: BenchmarkNode, output_dir=os.getcwd()):
+    def serialize_node_workflow(self, node: BenchmarkNode, output_dir: str = os.getcwd()):
+        """
+        Serializes a Snakefile for a benchmark node.
+
+        Args:
+            node (BenchmarkNode): benchmark node to serialize
+            output_dir (str): output directory for the Snakefile
+
+        Returns:
+        - Snakefile path.
+        """
         os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = node.get_definition_file()
@@ -101,7 +146,10 @@ class SnakemakeEngine(WorkflowEngine):
 
         return snakefile_path
 
-    def _write_snakefile_header(self, f):
+    @staticmethod
+    def _write_snakefile_header(f: TextIO):
+        """Write header for the generated Snakefile"""
+
         f.write("#!/usr/bin/env snakemake -s\n")
         f.write("##\n")
         f.write("## Snakefile to orchestrate YAML-defined omnibenchmarks\n")
@@ -109,17 +157,24 @@ class SnakemakeEngine(WorkflowEngine):
         f.write(f"## This Snakefile has been automatically generated on {datetime.now()}\n")
         f.write('\n')
 
-    def _write_includes(self, f, includes):
+    @staticmethod
+    def _write_includes(f: TextIO, includes: List[str]):
+        """Write includes directive for the generated Snakefile"""
+
         includes_path = os.path.dirname(os.path.realpath(rules.__file__))
         for include in includes:
             f.write(f'include: "{os.path.join(includes_path, include)}"\n')
 
         f.write('\n')
 
-    def _prepare_argv(self, snakefile: str, cores: int, dryrun: bool, work_dir: str, **snakemake_kwargs):
+    @staticmethod
+    def _prepare_argv(snakefile: str, cores: int, dryrun: bool, work_dir: str, **snakemake_kwargs):
+        """Prepare arguments to input to the snakemake cli"""
+
         argv = [
             '--snakefile', snakefile,
-            '--cores', str(cores)
+            '--cores', str(cores),
+            '--directory', work_dir,
         ]
 
         if dryrun:
