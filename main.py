@@ -59,7 +59,7 @@ def main(benchmark_file):
 
     # Serialize workflow to Snakefile
     workflow = SnakemakeEngine()
-    workflow.serialize_workflow(benchmark)
+    workflow.serialize_node_workflow(benchmark.get_nodes()[0])
 
 
 if __name__ == "__main__":

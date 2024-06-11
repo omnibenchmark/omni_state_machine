@@ -32,7 +32,7 @@ class BenchmarkNode:
         return self.converter.get_benchmark_definition_file()
 
     def get_inputs(self):
-        return self.inputs
+        return self.inputs if self.inputs else []
 
     def get_input_paths(self):
         input_paths = []
@@ -43,7 +43,7 @@ class BenchmarkNode:
         return input_paths
 
     def get_outputs(self):
-        return self.outputs
+        return self.outputs if self.outputs else []
 
     def get_output_paths(self):
         output_paths = []
