@@ -1,4 +1,3 @@
-from src.utils.helpers import *
 from src.converter import LinkMLConverter
 from src.model.benchmark import Benchmark
 
@@ -59,7 +58,7 @@ def main(benchmark_file):
 
     # Serialize workflow to Snakefile
     workflow = SnakemakeEngine()
-    workflow.serialize_node_workflow(benchmark.get_nodes()[0])
+    workflow.run_workflow(benchmark)
 
 
 if __name__ == "__main__":

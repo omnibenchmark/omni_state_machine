@@ -20,10 +20,7 @@ class BenchmarkNode:
         self.param_id = f'param_{param_id}' if parameters else 'default'
 
     def get_id(self):
-        node_id = f'{self.stage_id}-{self.module_id}-{self.param_id}'
-        node_id += f'-after_{self.after}' if self.after else ''
-
-        return node_id
+        return BenchmarkNode.to_id(self.stage_id, self.module_id, self.param_id, self.after)
 
     def get_definition(self):
         return self.converter.get_benchmark_definition()
@@ -76,3 +73,10 @@ class BenchmarkNode:
 
     def __hash__(self):
         return hash(self.get_id())
+
+    @staticmethod
+    def to_id(stage_id, module_id, param_id, after_stage=None):
+        node_id = f'{stage_id}-{module_id}-{param_id}'
+        node_id += f'-after_{after_stage}' if after_stage else ''
+
+        return node_id

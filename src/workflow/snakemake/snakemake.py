@@ -1,7 +1,11 @@
+import argparse
+import os
+
 from src.model import Benchmark, BenchmarkNode
 from src.workflow.workflow import WorkflowEngine
 from src.workflow.snakemake import rules
-import os
+from snakemake.cli import main as snakemake_cli
+
 from datetime import datetime
 
 # Define includes
@@ -9,7 +13,7 @@ INCLUDES = [
     "utils.smk",
     "rule_start_benchmark.smk",
     "rule_node.smk",
-    "rule_all.smk"
+    "rule_all.smk",
 ]
 
 
@@ -17,16 +21,27 @@ class SnakemakeEngine(WorkflowEngine):
     def __init__(self):
         super().__init__()
 
-    def run_workflow(self, benchmark: Benchmark):
-        raise NotImplementedError("Method not implemented yet")
+    def run_workflow(self, benchmark: Benchmark, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
+                     **snakemake_kwargs):
 
-    def serialize_workflow(self, benchmark: Benchmark, output_path=os.getcwd()):
-        os.makedirs(output_path, exist_ok=True)
+        # Serialize Snakefile for workflow
+        snakefile = self.serialize_workflow(benchmark, work_dir)
+
+        # Prepare the argv list
+        argv = self._prepare_argv(snakefile, cores, dryrun, work_dir, **snakemake_kwargs)
+
+        # Execute snakemake script
+        success = snakemake_cli(argv)
+
+        return success
+
+    def serialize_workflow(self, benchmark: Benchmark, output_dir: str = os.getcwd()):
+        os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = benchmark.get_definition_file()
 
         # Serialize Snakemake file
-        snakefile_path = os.path.join(output_path, 'Snakefile')
+        snakefile_path = os.path.join(output_dir, 'Snakefile')
         with open(snakefile_path, 'w') as f:
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
@@ -45,16 +60,29 @@ class SnakemakeEngine(WorkflowEngine):
 
         return snakefile_path
 
-    def run_node_workflow(self, node: BenchmarkNode):
-        raise NotImplementedError("Method not implemented yet")
+    def run_node_workflow(self, node: BenchmarkNode, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
+                          **snakemake_kwargs):
 
-    def serialize_node_workflow(self, node: BenchmarkNode, output_path=os.getcwd()):
-        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(work_dir, exist_ok=True)
+
+        # Serialize Snakefile for node workflow
+        snakefile = self.serialize_node_workflow(node, work_dir)
+
+        # Prepare the argv list
+        argv = self._prepare_argv(snakefile, cores, dryrun, work_dir, **snakemake_kwargs)
+
+        # Execute snakemake script
+        success = snakemake_cli(argv)
+
+        return success
+
+    def serialize_node_workflow(self, node: BenchmarkNode, output_dir=os.getcwd()):
+        os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = node.get_definition_file()
 
         # Serialize Snakemake file
-        snakefile_path = os.path.join(output_path, 'Snakefile')
+        snakefile_path = os.path.join(output_dir, 'Snakefile')
         with open(snakefile_path, 'w') as f:
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
@@ -87,3 +115,21 @@ class SnakemakeEngine(WorkflowEngine):
             f.write(f'include: "{os.path.join(includes_path, include)}"\n')
 
         f.write('\n')
+
+    def _prepare_argv(self, snakefile: str, cores: int, dryrun: bool, work_dir: str, **snakemake_kwargs):
+        argv = [
+            '--snakefile', snakefile,
+            '--cores', str(cores)
+        ]
+
+        if dryrun:
+            argv.append('--dryrun')
+
+        for key, value in snakemake_kwargs.items():
+            if isinstance(value, bool):
+                if value:  # Add flag only if True
+                    argv.append(f'--{key}')
+            else:
+                argv.extend([f'--{key}', str(value)])
+
+        return argv

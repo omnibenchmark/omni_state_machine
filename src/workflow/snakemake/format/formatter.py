@@ -1,5 +1,7 @@
 import re
 
+from src.model import BenchmarkNode
+
 
 def format_output_templates_to_be_expanded(node):
     outputs = node.get_outputs()
@@ -25,7 +27,7 @@ def format_input_templates_to_be_expanded(benchmark, wildcards):
 
     stage_id, module_id, param_id = _match_node_format(post)
 
-    node_hash = hash((stage_id, module_id, param_id, after_stage))
+    node_hash = hash(BenchmarkNode.to_id(stage_id, module_id, param_id, after_stage))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     assert matching_node is not None
 
