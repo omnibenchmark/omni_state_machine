@@ -13,8 +13,18 @@ class Benchmark:
     def get_definition(self):
         return self.converter.get_benchmark_definition()
 
+    def get_definition_file(self):
+        return self.converter.get_benchmark_definition_file()
+
     def get_nodes(self):
         return list(self.G.nodes)
+
+    def get_node_by_id(self, node_id):
+        for node in self.G.nodes:
+            if node.get_id() == node_id:
+                return node
+
+        return None
 
     def get_execution_paths(self):
         if self.execution_paths is None:

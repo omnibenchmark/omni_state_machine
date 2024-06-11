@@ -19,6 +19,18 @@ class BenchmarkNode:
         self.module_id = converter.get_module_id(module)
         self.param_id = f'param_{param_id}' if parameters else 'default'
 
+    def get_id(self):
+        node_id = f'{self.stage_id}-{self.module_id}-{self.param_id}'
+        node_id += f'-after_{self.after}' if self.after else ''
+
+        return node_id
+
+    def get_definition(self):
+        return self.converter.get_benchmark_definition()
+
+    def get_definition_file(self):
+        return self.converter.get_benchmark_definition_file()
+
     def get_inputs(self):
         return self.inputs
 
@@ -51,9 +63,7 @@ class BenchmarkNode:
         return self.stage
 
     def __str__(self):
-        node_str = f"BenchmarkNode({self.stage_id}, {self.module_id}, {self.param_id}"
-        node_str += f', after={self.after})' if self.after else ')'
-        return node_str
+        return f"BenchmarkNode({self.get_id()})"
 
     def __repr__(self):
         return str(self)
@@ -61,8 +71,8 @@ class BenchmarkNode:
     def __eq__(self, other):
         if isinstance(other, BenchmarkNode):
             return (self.stage_id, self.module_id, self.parameters, self.inputs) == \
-                   (other.stage_id, other.module_id, other.parameters, other.inputs)
+                (other.stage_id, other.module_id, other.parameters, other.inputs)
         return False
 
     def __hash__(self):
-        return hash((self.stage_id, self.module_id, self.param_id, self.after))
+        return hash(self.get_id())

@@ -14,6 +14,9 @@ class ConverterTrait:
     def get_benchmark_definition(self):
         raise NotImplementedError("Method not implemented yet")
 
+    def get_benchmark_definition_file(self):
+        raise NotImplementedError("Method not implemented yet")
+
     def get_benchmark_stages(self):
         raise NotImplementedError("Method not implemented yet")
 

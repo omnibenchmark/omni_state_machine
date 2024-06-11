@@ -2,7 +2,6 @@ from src.model import Benchmark, BenchmarkNode
 from src.workflow.workflow import WorkflowEngine
 from src.workflow.snakemake import rules
 import os
-import pickle
 from datetime import datetime
 
 # Define includes
@@ -24,10 +23,7 @@ class SnakemakeEngine(WorkflowEngine):
     def serialize_workflow(self, benchmark: Benchmark, output_path=os.getcwd()):
         os.makedirs(output_path, exist_ok=True)
 
-        # Dump benchmark pickle file
-        benchmark_path = os.path.join(output_path, "benchmark.pkl")
-        with open(benchmark_path, "wb") as f:
-            pickle.dump(benchmark, f)
+        benchmark_file = benchmark.get_definition_file()
 
         # Serialize Snakemake file
         snakefile_path = os.path.join(output_path, 'Snakefile')
@@ -35,8 +31,8 @@ class SnakemakeEngine(WorkflowEngine):
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
 
-            # Load benchmark from pickle file
-            f.write(f'benchmark = load("{benchmark_path}")\n\n')
+            # Load benchmark from yaml file
+            f.write(f'benchmark = load("{benchmark_file}")\n\n')
 
             # Create capture all rule
             f.write("all_paths = sorted(benchmark.get_output_paths())\n")
@@ -55,10 +51,7 @@ class SnakemakeEngine(WorkflowEngine):
     def serialize_node_workflow(self, node: BenchmarkNode, output_path=os.getcwd()):
         os.makedirs(output_path, exist_ok=True)
 
-        # Dump benchmark pickle file
-        benchmark_path = os.path.join(output_path, "benchmark.pkl")
-        with open(benchmark_path, "wb") as f:
-            pickle.dump(node, f)
+        benchmark_file = node.get_definition_file()
 
         # Serialize Snakemake file
         snakefile_path = os.path.join(output_path, 'Snakefile')
@@ -66,8 +59,8 @@ class SnakemakeEngine(WorkflowEngine):
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
 
-            # Load benchmark from pickle file
-            f.write(f'node = load("{benchmark_path}")\n\n')
+            # Load benchmark from yaml file
+            f.write(f'node = load_node("{benchmark_file}", "{node.get_id()}")\n\n')
 
             # Create capture all rule
             f.write("input_paths = node.get_input_paths()\n")

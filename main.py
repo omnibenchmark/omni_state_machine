@@ -15,8 +15,7 @@ from src.workflow.snakemake.snakemake import SnakemakeEngine
 ##
 
 def main(benchmark_file):
-    benchmark_yaml = load_benchmark(benchmark_file)
-    converter = LinkMLConverter(benchmark_yaml)
+    converter = LinkMLConverter(benchmark_file)
     validator = Validator()
     converter = validator.validate(converter)
     benchmark = Benchmark(converter)
@@ -61,9 +60,6 @@ def main(benchmark_file):
     # Serialize workflow to Snakefile
     workflow = SnakemakeEngine()
     workflow.serialize_workflow(benchmark)
-
-
-
 
 
 if __name__ == "__main__":
