@@ -1,22 +1,14 @@
-import os.path
-
-import yaml
-
 from src.converter.converter import ConverterTrait
 from src.utils.helpers import merge_dict_list, load_yaml
 
 
 class LinkMLConverter(ConverterTrait):
     def __init__(self, benchmark_file):
-        super().__init__()
-        self.benchmark_file = os.path.abspath(benchmark_file)
+        super().__init__(benchmark_file)
         self.benchmark = load_yaml(benchmark_file)
 
     def get_benchmark_definition(self):
         return self.benchmark
-
-    def get_benchmark_definition_file(self):
-        return self.benchmark_file
 
     def get_stage_id(self, stage):
         return stage.id

@@ -14,10 +14,13 @@ class Benchmark:
         return self.converter.get_benchmark_definition()
 
     def get_definition_file(self):
-        return self.converter.get_benchmark_definition_file()
+        return self.converter.benchmark_file
 
     def get_nodes(self):
         return list(self.G.nodes)
+
+    def get_stage_ids(self):
+        return self.converter.get_stage_ids()
 
     def get_node_by_id(self, node_id):
         for node in self.G.nodes:

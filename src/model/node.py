@@ -26,7 +26,7 @@ class BenchmarkNode:
         return self.converter.get_benchmark_definition()
 
     def get_definition_file(self):
-        return self.converter.get_benchmark_definition_file()
+        return self.converter.benchmark_file
 
     def get_inputs(self):
         return self.inputs if self.inputs else []
@@ -75,8 +75,8 @@ class BenchmarkNode:
         return hash(self.get_id())
 
     @staticmethod
-    def to_id(stage_id, module_id, param_id, after_stage=None):
+    def to_id(stage_id, module_id, param_id, after_stage_id=None):
         node_id = f'{stage_id}-{module_id}-{param_id}'
-        node_id += f'-after_{after_stage}' if after_stage else ''
+        node_id += f'-after_{after_stage_id}' if after_stage_id else ''
 
         return node_id

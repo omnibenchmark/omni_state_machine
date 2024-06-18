@@ -1,10 +1,18 @@
 import re
-from typing import List, Set, Tuple
+from itertools import takewhile
+from pathlib import Path
+from typing import List, Set, Tuple, Union, NamedTuple
 
 from src.model import BenchmarkNode, Benchmark
 
 
-def format_output_templates_to_be_expanded(node: BenchmarkNode):
+class Wildcards(NamedTuple):
+    pre: str
+    post: str
+    name: str
+
+
+def format_output_templates_to_be_expanded(node: BenchmarkNode) -> List[str]:
     """Formats node outputs that will be expanded according to Snakemake's engine"""
 
     outputs = node.get_outputs()
@@ -17,7 +25,7 @@ def format_output_templates_to_be_expanded(node: BenchmarkNode):
     return outputs
 
 
-def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards):
+def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildcards) -> List[str]:
     """Formats benchmark inputs that will be expanded according to Snakemake's engine"""
 
     pre = wildcards.pre
@@ -25,63 +33,60 @@ def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards):
     name = wildcards.name
 
     nodes = benchmark.get_nodes()
-    stage_ids = set([node.stage_id for node in nodes])
+    stage_ids = benchmark.get_stage_ids()
 
     pre_stages = _extract_stages_from_path(pre, stage_ids)
-    after_stage = pre_stages[-1][0] if len(pre_stages) > 0 else None
+    after_stage_id, _, _ = _match_node_format(pre_stages[-1]) if len(pre_stages) > 0 else None
 
     stage_id, module_id, param_id = _match_node_format(post)
 
-    node_hash = hash(BenchmarkNode.to_id(stage_id, module_id, param_id, after_stage))
+    node_hash = hash(BenchmarkNode.to_id(stage_id, module_id, param_id, after_stage_id))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
-    assert matching_node is not None
+    if matching_node:
+        node_inputs = matching_node.get_inputs()
 
-    node_inputs = matching_node.get_inputs()
+        inputs = _match_inputs(node_inputs, pre_stages, pre, name)
 
-    inputs = _match_inputs(node_inputs, pre_stages, pre, name)
+        # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
+        return inputs
 
-    # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
-    return inputs
+    else:
+        return []
 
 
-def _extract_stages_from_path(path: str, known_stage_ids: Set[str]):
-    parts = path.split('/')
-    stages = []
+def _extract_stages_from_path(path: str, known_stage_ids: Set[str]) -> List[Union[str, tuple]]:
+    def is_known_stage(part: str) -> bool:
+        return part in known_stage_ids
 
-    i = 1
-    while i < len(parts) - 1:
-        if parts[i] in known_stage_ids:
-            j = i+1
+    def find_sub_parts(start_index: int) -> Union[str, tuple]:
+        sub_parts = list(takewhile(lambda x: x not in known_stage_ids, parts[start_index + 1:]))
+        return tuple(parts[start_index:start_index + 1 + len(sub_parts)])
 
-            while j < len(parts) and parts[j] not in known_stage_ids:
-                j += 1
+    if not path:
+        return []
 
-            sub_parts = parts[i:j]
-
-            assert 2 <= len(sub_parts) <= 4
-            stages.append(tuple(sub_parts))
-            i = j
-        else:
-            i += 1
+    parts = [part for part in Path(path).parts]
+    stages = [
+        find_sub_parts(part_idx)
+        for part_idx, part in enumerate(parts)
+        if is_known_stage(part)
+    ]
 
     return stages
 
 
-def _match_node_format(to_match: str):
+def _match_node_format(to_match: Union[str, tuple]) -> Tuple[str, str, str]:
     if type(to_match) is str:
-        to_match = to_match.split('/')
+        to_match = [part for part in Path(to_match).parts]
 
     stage_id = to_match[0]
     module_id = to_match[1]
-    if len(to_match) == 2:
-        param_id = 'default'
-    else:
-        param_id = to_match[2]
+    param_id = to_match[2]
 
     return stage_id, module_id, param_id
 
 
-def _match_input_module(input: str, stages: List[Tuple[str]], name: str):
+def _match_input_module(input: str, stages: List[Tuple[str]], name: str) -> str:
     expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
     matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
 
@@ -96,11 +101,10 @@ def _match_input_module(input: str, stages: List[Tuple[str]], name: str):
 
         return input
     else:
-        print(f'Could not find matching stage for {input} in {stages}')
-        return None
+        raise RuntimeError(f'Could not find matching stage for {input} in {stages}')
 
 
-def _match_input_prefix(input: str, pre: str):
+def _match_input_prefix(input: str, pre: str) -> str:
     stage = f'/{input.split("/")[1]}'
     matched_prefix = pre.split(stage)[0]
     formatted_input = input.format(pre=matched_prefix)
@@ -109,7 +113,7 @@ def _match_input_prefix(input: str, pre: str):
     return formatted_input
 
 
-def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, name: str):
+def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, name: str) -> List[str]:
     all_matched = True
 
     formatted_inputs = []

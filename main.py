@@ -63,7 +63,7 @@ def main(benchmark_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test OmniWorkflow converter.')
-    parser.add_argument('--benchmark_file', default='data/Benchmark_001',
+    parser.add_argument('--benchmark_file', default='data/Benchmark_001.yaml',
                         type=str, help='Location of the benchmark file')
 
     args = parser.parse_args()
@@ -77,4 +77,4 @@ if __name__ == "__main__":
             for error in e.errors:
                 print(error)
     else:
-        print(f'Benchmark file {benchmark_file} does not exist.')
+        raise RuntimeError(f'Benchmark file {benchmark_file} does not exist.')
