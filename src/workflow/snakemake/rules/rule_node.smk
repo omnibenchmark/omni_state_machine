@@ -25,7 +25,7 @@ def _create_initial_node(node):
             stage=stage_id,
             module=module_id,
             params=param_id,
-            name=module_id
+            dataset=module_id
         output:
             formatter.format_output_templates_to_be_expanded(node),
         params:

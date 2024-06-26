@@ -1,6 +1,6 @@
 install:
 	pipx install pipenv
-	pipenv install -r requirements.txt
+	pipenv update
 activate:
 	pipenv shell
 serialize:

@@ -35,8 +35,8 @@ def make_folder_name_safe(parameter_value):
 
 def format_name(path, prefix):
     pattern = fr'{prefix}/.+?/([^/]+)/.+?$'
-    name = re.match(pattern, path)[1]
-    new_path = path.format(name=name)
+    dataset = re.match(pattern, path)[1]
+    new_path = path.format(dataset=dataset)
 
     return new_path
 

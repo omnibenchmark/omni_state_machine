@@ -9,7 +9,7 @@ from src.model import BenchmarkNode, Benchmark
 class Wildcards(NamedTuple):
     pre: str
     post: str
-    name: str
+    dataset: str
 
 
 def format_output_templates_to_be_expanded(node: BenchmarkNode) -> List[str]:
@@ -30,7 +30,7 @@ def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildc
 
     pre = wildcards.pre
     post = wildcards.post
-    name = wildcards.name
+    dataset = wildcards.dataset
 
     nodes = benchmark.get_nodes()
     stage_ids = benchmark.get_stage_ids()
@@ -45,7 +45,7 @@ def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildc
     if matching_node:
         node_inputs = matching_node.get_inputs()
 
-        inputs = _match_inputs(node_inputs, pre_stages, pre, name)
+        inputs = _match_inputs(node_inputs, pre_stages, pre, dataset)
 
         # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
         return inputs
@@ -86,7 +86,7 @@ def _match_node_format(to_match: Union[str, tuple]) -> Tuple[str, str, str]:
     return stage_id, module_id, param_id
 
 
-def _match_input_module(input: str, stages: List[Tuple[str]], name: str) -> str:
+def _match_input_module(input: str, stages: List[Tuple[str]], dataset: str) -> str:
     expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
     matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
 
@@ -94,7 +94,7 @@ def _match_input_module(input: str, stages: List[Tuple[str]], name: str) -> str:
         matched_module = matching_stage[1]
 
         input = input.replace('{module}', matched_module)
-        input = input.replace('{name}', name)
+        input = input.replace('{dataset}', dataset)
         if '{params}' in input:
             matched_params = next((x for x in matching_stage[2:] if 'param' or 'default' in x), None)
             input = input.replace('{params}', matched_params)
@@ -113,12 +113,12 @@ def _match_input_prefix(input: str, pre: str) -> str:
     return formatted_input
 
 
-def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, name: str) -> List[str]:
+def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, dataset: str) -> List[str]:
     all_matched = True
 
     formatted_inputs = []
     for input in inputs:
-        formatted_input = _match_input_module(input, stages, name)
+        formatted_input = _match_input_module(input, stages, dataset)
         if not formatted_input:
             all_matched = False
             break

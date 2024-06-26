@@ -17,21 +17,18 @@ class LinkMLConverter(ConverterTrait):
         return module.id
 
     def get_benchmark_stages(self):
-        return dict([(x.id, x) for x in self.benchmark.steps])
+        return dict([(x.id, x) for x in self.benchmark.stages])
 
     def get_benchmark_stage(self, stage_id):
         stages = self.get_benchmark_stages().values()
         return next(stage for stage in stages if stage.id == stage_id)
 
     def get_modules_by_stage(self, stage):
-        return dict([(x.id, x) for x in stage.members])
+        return dict([(x.id, x) for x in stage.modules])
 
     def get_stage_implicit_inputs(self, stage):
         if isinstance(stage, str):
             stage = self.get_benchmark_stages()[stage]
-
-        if stage.initial:
-            return []
 
         return [input.entries for input in stage.inputs]
 
@@ -63,11 +60,11 @@ class LinkMLConverter(ConverterTrait):
                 outputs = self.get_stage_outputs(stage=stage_id)
                 outputs = {
                     key: value.format(
-                        input_dirname='{input_dirname}',
+                        input='{input}',
                         stage=stage_id,
                         module='{module}',
                         params='{params}',
-                        name='{name}') for key, value in outputs.items()
+                        dataset='{dataset}') for key, value in outputs.items()
                 }
                 all_stages_outputs.append(outputs)
 
@@ -100,16 +97,16 @@ class LinkMLConverter(ConverterTrait):
         return params
 
     def get_module_repository(self, module):
-        return module.repo
+        return module.repository
 
     def is_initial(self, stage):
-        if stage.initial:
-            return stage.initial
+        if stage.inputs is None or len(stage.inputs) == 0:
+            return True
         else:
             return False
 
     def is_terminal(self, stage):
-        if stage.terminal:
+        if stage.outputs is None or len(stage.outputs) == 0: # FIXME Might not work always
             return stage.terminal
         else:
             return False
@@ -118,19 +115,19 @@ class LinkMLConverter(ConverterTrait):
         return stage.after
 
     def get_stage_ids(self):
-        return [x.id for x in self.benchmark.steps]
+        return [x.id for x in self.benchmark.stages]
 
     def get_module_ids(self):
         module_ids = []
-        for stage in self.benchmark.steps:
-            for module in stage.members:
+        for stage in self.benchmark.stages:
+            for module in stage.modules:
                 module_ids.append(module.id)
 
         return module_ids
 
     def get_output_ids(self):
         output_ids = []
-        for stage in self.benchmark.steps:
+        for stage in self.benchmark.stages:
             for output in stage.outputs:
                 output_ids.append(output.id)
 

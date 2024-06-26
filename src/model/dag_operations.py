@@ -9,7 +9,7 @@ def expend_stage_nodes(converter, stage, output_folder):
 
     input_dirname = output_folder if converter.is_initial(stage) else '{pre}'
     stage_outputs = converter.get_stage_outputs(stage).values()
-    outputs = [x.replace('{input_dirname}', input_dirname) for x in stage_outputs]
+    outputs = [x.replace('{input}', input_dirname) for x in stage_outputs]
 
     inputs_for_stage = converter.get_stage_implicit_inputs(stage)
     if not inputs_for_stage or len(inputs_for_stage) == 0:
@@ -27,7 +27,7 @@ def expend_stage_nodes(converter, stage, output_folder):
                 required_input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
                 most_recent_input_stage = sorted(list(required_input_stages), key=converter.stage_order)[-1] if inputs else None
                 inputs = converter.get_stage_explicit_inputs(inputs).values() if inputs else None
-                inputs = [x.replace('{input_dirname}', '{pre}') for x in inputs] if inputs else None
+                inputs = [x.replace('{input}', '{pre}') for x in inputs] if inputs else None
                 node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id,
                                      after=most_recent_input_stage)
                 nodes.append(node)

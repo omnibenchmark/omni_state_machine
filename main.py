@@ -24,7 +24,7 @@ def main(benchmark_file):
     for stage_id in stages:
         stage = stages[stage_id]
         stage_name = stage['name']
-        print('Stage', stage_name)
+        print('Stage', stage_name if stage_name else stage_id)
 
         modules_in_stage = converter.get_modules_by_stage(stage)
         print('  ', stage_name, 'with modules', modules_in_stage.keys(), '\n')
@@ -37,7 +37,7 @@ def main(benchmark_file):
         for module_id in modules_in_stage:
             module = modules_in_stage[module_id]
             module_name = module['name']
-            print('  Module', module_name)
+            print('  Module', module_name if module_name else module_id)
             print('    Repo:', converter.get_module_repository(module))
             print('    Excludes:', converter.get_module_excludes(module))
             print('    Params:', converter.get_module_parameters(module))
@@ -63,7 +63,7 @@ def main(benchmark_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test OmniWorkflow converter.')
-    parser.add_argument('--benchmark_file', default='data/Benchmark_001.yaml',
+    parser.add_argument('--benchmark_file', default='data/Benchmark_002.yaml',
                         type=str, help='Location of the benchmark file')
 
     args = parser.parse_args()
