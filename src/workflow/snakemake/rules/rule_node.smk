@@ -19,6 +19,10 @@ def _create_initial_node(node):
     module_id = node.module_id
     param_id = node.param_id
 
+    repository = node.get_repository()
+    repository_url = repository.url if repository else None
+    commit_hash = repository.commit if repository else None
+
     rule:
         name: f"{{stage}}_{{module}}_{{param}}".format(stage=stage_id,module=module_id,param=param_id)
         wildcard_constraints:
@@ -29,6 +33,8 @@ def _create_initial_node(node):
         output:
             formatter.format_output_templates_to_be_expanded(node),
         params:
+            repository_url = repository_url,
+            commit_hash = commit_hash,
             parameters = node.get_parameters(),
         script: os.path.join(os.path.dirname(os.path.realpath(scripts.__file__)), 'run_module.py')
 
@@ -44,6 +50,12 @@ def _create_intermediate_node(benchmark, node):
     if any(['{params}' in o for o in outputs]):
         post += '/' + param_id
 
+    repository = node.get_repository()
+    repository_url = repository.url if repository else None
+    commit_hash = repository.commit if repository else None
+
+    inputs_map = lambda wildcards: formatter.format_input_templates_to_be_expanded(benchmark, wildcards, return_as_dict=True)
+
     rule:
         name: f"{{stage}}_{{module}}_{{param}}".format(stage=stage_id,module=module_id,param=param_id)
         wildcard_constraints:
@@ -55,6 +67,9 @@ def _create_intermediate_node(benchmark, node):
         output:
             formatter.format_output_templates_to_be_expanded(node)
         params:
+            inputs_map = inputs_map,
+            repository_url = repository_url,
+            commit_hash = commit_hash,
             parameters = node.get_parameters()
         script: os.path.join(os.path.dirname(os.path.realpath(scripts.__file__)), 'run_module.py')
 

@@ -1,7 +1,7 @@
 import re
 from itertools import takewhile
 from pathlib import Path
-from typing import List, Set, Tuple, Union, NamedTuple
+from typing import List, Set, Tuple, Union, NamedTuple, Dict, Any
 
 from src.model import BenchmarkNode, Benchmark
 
@@ -25,7 +25,7 @@ def format_output_templates_to_be_expanded(node: BenchmarkNode) -> List[str]:
     return outputs
 
 
-def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildcards) -> List[str]:
+def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildcards, return_as_dict=False) -> dict[str, str] | list[str]:
     """Formats benchmark inputs that will be expanded according to Snakemake's engine"""
 
     pre = wildcards.pre
@@ -43,15 +43,17 @@ def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildc
     node_hash = hash(BenchmarkNode.to_id(stage_id, module_id, param_id, after_stage_id))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     if matching_node:
-        node_inputs = matching_node.get_inputs()
+        node_inputs = matching_node.get_inputs_dict()
 
         inputs = _match_inputs(node_inputs, pre_stages, pre, dataset)
 
         # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
-        return inputs
-
+        if return_as_dict:
+            return inputs
+        else:
+            return inputs.values()
     else:
-        return []
+        return {} if return_as_dict else []
 
 
 def _extract_stages_from_path(path: str, known_stage_ids: Set[str]) -> List[Union[str, tuple]]:
@@ -113,17 +115,17 @@ def _match_input_prefix(input: str, pre: str) -> str:
     return formatted_input
 
 
-def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, dataset: str) -> List[str]:
+def _match_inputs(inputs: dict[str, str], stages: List[Tuple[str]], pre: str, dataset: str) -> dict[str, str]:
     all_matched = True
 
-    formatted_inputs = []
-    for input in inputs:
+    formatted_inputs = {}
+    for key, input in inputs.items():
         formatted_input = _match_input_module(input, stages, dataset)
         if not formatted_input:
             all_matched = False
             break
         else:
             formatted_input = _match_input_prefix(formatted_input, pre)
-            formatted_inputs.append(formatted_input)
+            formatted_inputs[key] = formatted_input
 
-    return formatted_inputs if all_matched else []
+    return formatted_inputs if all_matched else {}

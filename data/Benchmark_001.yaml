@@ -55,8 +55,8 @@ stages:
       - id: P2
         software_environment: "R"
         parameters:
-          - values: ["-a 0", "-c 0"]
-          - values: ["-a 1", "-c 0.1"]
+          - values: ["-a 0", "-b 0"]
+          - values: ["-a 1", "-b 0.1"]
         repository:
           url: https://github.com/omnibenchmark-example/process.git
           commit: 24579a8
@@ -107,17 +107,17 @@ stages:
       - id: m1
         software_environment: "python"
         repository:
-          url: git@github.com:omnibenchmark-example/metric.git
+          url: https://github.com/omnibenchmark-example/metric.git
           commit: ba781d7
       - id: m2
         software_environment: "python"
         repository:
-          url: git@github.com:omnibenchmark-example/metric.git
+          url: https://github.com/omnibenchmark-example/metric.git
           commit: ba781d7
       - id: m3
         software_environment: "python"
         repository:
-          url: git@github.com:omnibenchmark-example/metric.git
+          url: https://github.com/omnibenchmark-example/metric.git
           commit: ba781d7
     inputs:
       - entries: [

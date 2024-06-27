@@ -1,5 +1,7 @@
 import os.path
 
+from omni_schema.datamodel.omni_schema import Repository
+
 
 class BenchmarkNode:
     def __init__(self, converter,
@@ -22,6 +24,9 @@ class BenchmarkNode:
     def get_id(self):
         return BenchmarkNode.to_id(self.stage_id, self.module_id, self.param_id, self.after)
 
+    def get_benchmark_name(self):
+        return self.converter.get_benchmark_name()
+
     def get_definition(self):
         return self.converter.get_benchmark_definition()
 
@@ -29,7 +34,17 @@ class BenchmarkNode:
         return self.converter.benchmark_file
 
     def get_inputs(self):
-        return self.inputs if self.inputs else []
+        return self.inputs.values() if self.inputs else []
+
+    def get_inputs_dict(self):
+        return self.inputs if self.inputs else {}
+
+    def get_explicit_inputs(self):
+        explicit_inputs = [self.converter.get_stage_explicit_inputs(i) for i in self.converter.get_stage_implicit_inputs(self.stage)]
+        return explicit_inputs
+
+    def get_benchmark_name(self):
+        return self.converter.get_benchmark_name()
 
     def get_input_paths(self):
         input_paths = []
@@ -52,6 +67,9 @@ class BenchmarkNode:
 
     def get_parameters(self):
         return self.parameters
+
+    def get_repository(self):
+        return self.converter.get_module_repository(module=self.module)
 
     def is_initial(self):
         return self.converter.is_initial(self.stage)

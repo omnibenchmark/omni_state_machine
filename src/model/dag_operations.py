@@ -26,8 +26,8 @@ def expend_stage_nodes(converter, stage, output_folder):
             for inputs in inputs_for_stage:
                 required_input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
                 most_recent_input_stage = sorted(list(required_input_stages), key=converter.stage_order)[-1] if inputs else None
-                inputs = converter.get_stage_explicit_inputs(inputs).values() if inputs else None
-                inputs = [x.replace('{input}', '{pre}') for x in inputs] if inputs else None
+                inputs = converter.get_stage_explicit_inputs(inputs) if inputs else None
+                inputs = {k: v.replace('{input}', '{pre}') for k, v in inputs.items()} if inputs else None
                 node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id,
                                      after=most_recent_input_stage)
                 nodes.append(node)

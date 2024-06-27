@@ -7,6 +7,9 @@ class LinkMLConverter(ConverterTrait):
         super().__init__(benchmark_file)
         self.benchmark = load_yaml(benchmark_file)
 
+    def get_benchmark_name(self):
+        return self.benchmark.name if self.benchmark.name else self.benchmark.id
+
     def get_benchmark_definition(self):
         return self.benchmark
 

@@ -10,6 +10,9 @@ class Benchmark:
 
         self.execution_paths = None
 
+    def get_benchmark_name(self):
+        return self.converter.get_benchmark_name()
+
     def get_definition(self):
         return self.converter.get_benchmark_definition()
 
