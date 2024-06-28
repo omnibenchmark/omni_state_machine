@@ -6,6 +6,7 @@
 ## Izaskun Mallona
 import hashlib
 import subprocess
+import logging
 import os
 from typing import List
 
@@ -28,6 +29,7 @@ def execution(module_dir: str, module_name: str, output_dir: str, dataset: str,
 
     run_sh = os.path.join(module_dir, 'run.sh')
     if not os.path.exists(run_sh):
+        logging.error(f"ERROR: {module_name} run.sh script does not exist.")
         raise RuntimeError(f'{module_name} run.sh script does not exist')
 
     # Constructing the command list
@@ -48,7 +50,8 @@ def execution(module_dir: str, module_name: str, output_dir: str, dataset: str,
         return result.stdout
 
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f'Error executing {run_sh}') from e
+        logging.error(f"ERROR: Executing {run_sh} failed with exit code {e.returncode}.")
+        raise RuntimeError(f'ERROR: Executing {run_sh} failed with exit code {e.returncode}.') from e
 
 
 # Create a unique folder name based on the repository URL and commit hash
@@ -64,13 +67,16 @@ def clone_module(output_dir: str, repository_url: str, commit_hash: str):
     module_dir = os.path.join(output_dir, module_name)
 
     if not os.path.exists(module_dir):
+        logging.info(f"Cloning module `{repository_url}:{commit_hash}` to `{module_dir}`")
         repo = Repo.clone_from(repository_url, module_dir)
         repo.git.checkout(commit_hash)
     else:
         repo = Repo(module_dir)
 
     if repo.head.commit.hexsha[:7] != commit_hash:
-        raise RuntimeError(f'WARNING: {commit_hash} does not match {repo.head.commit.hexsha[:7]}')
+        logging.error(f"ERROR: Failed while cloning module `{repository_url}:{commit_hash}`")
+        logging.error(f"{commit_hash} does not match {repo.head.commit.hexsha[:7]}`")
+        raise RuntimeError(f'ERROR: {commit_hash} does not match {repo.head.commit.hexsha[:7]}')
 
     return module_dir
 
