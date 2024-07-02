@@ -3,7 +3,7 @@ from src.utils.helpers import *
 
 
 class Benchmark:
-    def __init__(self, converter, output_folder='out'):
+    def __init__(self, converter, output_folder="out"):
         self.converter = converter
         self.output_folder = output_folder
         self.G = dag.build_dag_from_definition(converter, self.output_folder)
@@ -44,7 +44,9 @@ class Benchmark:
         output_paths = [
             format_name(output, self.output_folder)
             for path in execution_paths
-            for output in self._construct_output_paths(prefix=self.output_folder, nodes=path)
+            for output in self._construct_output_paths(
+                prefix=self.output_folder, nodes=path
+            )
         ]
 
         return set(output_paths)
@@ -52,7 +54,9 @@ class Benchmark:
     def get_explicit_inputs(self, stage_id: str, test: bool = True):
         stage = self.converter.get_benchmark_stage(stage_id)
         implicit_inputs = self.converter.get_stage_implicit_inputs(stage)
-        explicit_inputs = [self.converter.get_stage_explicit_inputs(i) for i in implicit_inputs]
+        explicit_inputs = [
+            self.converter.get_stage_explicit_inputs(i) for i in implicit_inputs
+        ]
         return explicit_inputs
 
     def get_explicit_outputs(self, stage_id: str):
@@ -64,7 +68,9 @@ class Benchmark:
         return node.get_parameters()
 
     def plot_graph(self):
-        dag.plot_graph(self.G, output_file='output_dag.png', scale_factor=1.5, node_spacing=0.2)
+        dag.plot_graph(
+            self.G, output_file="output_dag.png", scale_factor=1.5, node_spacing=0.2
+        )
 
     def __str__(self):
         return f"Benchmark({self.get_definition})"
@@ -105,15 +111,20 @@ class Benchmark:
             tail = nodes[1:]
             stage_outputs = self.converter.get_stage_outputs(head.stage_id).values()
 
-            current_path = f'{head.stage_id}/{head.module_id}'
-            if any(['{params}' in o for o in stage_outputs]):
-                current_path += f'/{head.param_id}'
+            current_path = f"{head.stage_id}/{head.module_id}"
+            if any(["{params}" in o for o in stage_outputs]):
+                current_path += f"/{head.param_id}"
 
-            new_prefix = f'{prefix}/{current_path}'
-            paths = [x.format(input=prefix,
-                              stage=head.stage_id,
-                              module=head.module_id,
-                              params=head.param_id,
-                              dataset='{dataset}') for x in stage_outputs]
+            new_prefix = f"{prefix}/{current_path}"
+            paths = [
+                x.format(
+                    input=prefix,
+                    stage=head.stage_id,
+                    module=head.module_id,
+                    params=head.param_id,
+                    dataset="{dataset}",
+                )
+                for x in stage_outputs
+            ]
 
             return paths + self._construct_output_paths(new_prefix, tail)

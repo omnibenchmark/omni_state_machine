@@ -63,11 +63,13 @@ class LinkMLConverter(ConverterTrait):
                 outputs = self.get_stage_outputs(stage=stage_id)
                 outputs = {
                     key: value.format(
-                        input='{input}',
+                        input="{input}",
                         stage=stage_id,
-                        module='{module}',
-                        params='{params}',
-                        dataset='{dataset}') for key, value in outputs.items()
+                        module="{module}",
+                        params="{params}",
+                        dataset="{dataset}",
+                    )
+                    for key, value in outputs.items()
                 }
                 all_stages_outputs.append(outputs)
 

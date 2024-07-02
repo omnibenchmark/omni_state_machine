@@ -20,8 +20,14 @@ INCLUDES = [
 class SnakemakeEngine(WorkflowEngine):
     """Snakemake implementation of the WorkflowEngine interface."""
 
-    def run_workflow(self, benchmark: Benchmark, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
-                     **snakemake_kwargs):
+    def run_workflow(
+        self,
+        benchmark: Benchmark,
+        cores: int = 1,
+        dryrun: bool = False,
+        work_dir: str = os.getcwd(),
+        **snakemake_kwargs,
+    ):
         """
         Serializes & runs benchmark workflow using snakemake.
 
@@ -40,7 +46,9 @@ class SnakemakeEngine(WorkflowEngine):
         snakefile = self.serialize_workflow(benchmark, work_dir)
 
         # Prepare the argv list
-        argv = self._prepare_argv(snakefile, cores, dryrun, work_dir, **snakemake_kwargs)
+        argv = self._prepare_argv(
+            snakefile, cores, dryrun, work_dir, **snakemake_kwargs
+        )
 
         # Execute snakemake script
         success = snakemake_cli(argv)
@@ -63,8 +71,8 @@ class SnakemakeEngine(WorkflowEngine):
         benchmark_file = benchmark.get_definition_file()
 
         # Serialize Snakemake file
-        snakefile_path = os.path.join(output_dir, 'Snakefile')
-        with open(snakefile_path, 'w') as f:
+        snakefile_path = os.path.join(output_dir, "Snakefile")
+        with open(snakefile_path, "w") as f:
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
 
@@ -82,13 +90,23 @@ class SnakemakeEngine(WorkflowEngine):
 
         return snakefile_path
 
-    def run_node_workflow(self, node: BenchmarkNode, cores: int = 1, dryrun: bool = False, work_dir: str = os.getcwd(),
-                          **snakemake_kwargs):
+    def run_node_workflow(
+        self,
+        node: BenchmarkNode,
+        input_dir: str,
+        dataset: str,
+        cores: int = 1,
+        dryrun: bool = False,
+        work_dir: str = os.getcwd(),
+        **snakemake_kwargs,
+    ):
         """
         Serializes & runs benchmark node workflow using snakemake.
 
         Args:
             node (Benchmark): benchmark node to run
+            input_dir (str): directory containing the inputs for the benchmark node
+            dataset (str): file names corresponding to the dataset
             cores (int): number of cores to run
             dryrun (bool): validate the snakemake workflow with the benchmark without actual execution
             work_dir (str): working directory
@@ -104,14 +122,18 @@ class SnakemakeEngine(WorkflowEngine):
         snakefile = self.serialize_node_workflow(node, work_dir)
 
         # Prepare the argv list
-        argv = self._prepare_argv(snakefile, cores, dryrun, work_dir, **snakemake_kwargs)
+        argv = self._prepare_argv(
+            snakefile, input_dir, dataset, cores, dryrun, work_dir, **snakemake_kwargs
+        )
 
         # Execute snakemake script
         success = snakemake_cli(argv)
 
         return success
 
-    def serialize_node_workflow(self, node: BenchmarkNode, output_dir: str = os.getcwd()):
+    def serialize_node_workflow(
+        self, node: BenchmarkNode, output_dir: str = os.getcwd()
+    ):
         """
         Serializes a Snakefile for a benchmark node.
 
@@ -127,8 +149,8 @@ class SnakemakeEngine(WorkflowEngine):
         benchmark_file = node.get_definition_file()
 
         # Serialize Snakemake file
-        snakefile_path = os.path.join(output_dir, 'Snakefile')
-        with open(snakefile_path, 'w') as f:
+        snakefile_path = os.path.join(output_dir, "Snakefile")
+        with open(snakefile_path, "w") as f:
             self._write_snakefile_header(f)
             self._write_includes(f, INCLUDES)
 
@@ -136,13 +158,13 @@ class SnakemakeEngine(WorkflowEngine):
             f.write(f'node = load_node("{benchmark_file}", "{node.get_id()}")\n\n')
 
             # Create capture all rule
-            f.write("input_paths = node.get_input_paths()\n")
-            f.write("output_paths = node.get_output_paths()\n")
+            f.write("input_paths = node.get_input_paths(config)\n")
+            f.write("output_paths = node.get_output_paths(config)\n")
             f.write("all_paths = input_paths + output_paths\n\n")
             f.write("create_all_rule(all_paths)\n\n")
 
             # Create node rules
-            f.write("create_node_rule(node)\n\n")
+            f.write("create_standalone_node_rule(node, config)\n\n")
 
         return snakefile_path
 
@@ -154,8 +176,10 @@ class SnakemakeEngine(WorkflowEngine):
         f.write("##\n")
         f.write("## Snakefile to orchestrate YAML-defined omnibenchmarks\n")
         f.write("##\n")
-        f.write(f"## This Snakefile has been automatically generated on {datetime.now()}\n")
-        f.write('\n')
+        f.write(
+            f"## This Snakefile has been automatically generated on {datetime.now()}\n"
+        )
+        f.write("\n")
 
     @staticmethod
     def _write_includes(f: TextIO, includes: List[str]):
@@ -165,26 +189,40 @@ class SnakemakeEngine(WorkflowEngine):
         for include in includes:
             f.write(f'include: "{os.path.join(includes_path, include)}"\n')
 
-        f.write('\n')
+        f.write("\n")
 
     @staticmethod
-    def _prepare_argv(snakefile: str, cores: int, dryrun: bool, work_dir: str, **snakemake_kwargs):
+    def _prepare_argv(
+        snakefile: str,
+        input_dir: str,
+        dataset: str,
+        cores: int,
+        dryrun: bool,
+        work_dir: str,
+        **snakemake_kwargs,
+    ):
         """Prepare arguments to input to the snakemake cli"""
 
         argv = [
-            '--snakefile', snakefile,
-            '--cores', str(cores),
-            '--directory', work_dir,
+            "--snakefile",
+            snakefile,
+            "--cores",
+            str(cores),
+            "--directory",
+            work_dir,
+            "--config",
+            f"input={input_dir}",
+            f"dataset={dataset}",
         ]
 
         if dryrun:
-            argv.append('--dryrun')
+            argv.append("--dryrun")
 
         for key, value in snakemake_kwargs.items():
             if isinstance(value, bool):
                 if value:  # Add flag only if True
-                    argv.append(f'--{key}')
+                    argv.append(f"--{key}")
             else:
-                argv.extend([f'--{key}', str(value)])
+                argv.extend([f"--{key}", str(value)])
 
         return argv

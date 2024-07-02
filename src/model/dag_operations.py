@@ -7,9 +7,9 @@ from src.model.node import BenchmarkNode
 def expend_stage_nodes(converter, stage, output_folder):
     nodes = []
 
-    input_dirname = output_folder if converter.is_initial(stage) else '{pre}'
+    input_dirname = output_folder if converter.is_initial(stage) else "{pre}"
     stage_outputs = converter.get_stage_outputs(stage).values()
-    outputs = [x.replace('{input}', input_dirname) for x in stage_outputs]
+    outputs = [x.replace("{input}", input_dirname) for x in stage_outputs]
 
     inputs_for_stage = converter.get_stage_implicit_inputs(stage)
     if not inputs_for_stage or len(inputs_for_stage) == 0:
@@ -24,12 +24,30 @@ def expend_stage_nodes(converter, stage, output_folder):
 
         for param_id, param in enumerate(parameters):
             for inputs in inputs_for_stage:
-                required_input_stages = set(converter.get_inputs_stage(inputs).values()) if inputs else None
-                most_recent_input_stage = sorted(list(required_input_stages), key=converter.stage_order)[-1] if inputs else None
+                required_input_stages = (
+                    set(converter.get_inputs_stage(inputs).values()) if inputs else None
+                )
+                most_recent_input_stage = (
+                    sorted(list(required_input_stages), key=converter.stage_order)[-1]
+                    if inputs
+                    else None
+                )
                 inputs = converter.get_stage_explicit_inputs(inputs) if inputs else None
-                inputs = {k: v.replace('{input}', '{pre}') for k, v in inputs.items()} if inputs else None
-                node = BenchmarkNode(converter, stage, module, param, inputs, outputs, param_id,
-                                     after=most_recent_input_stage)
+                inputs = (
+                    {k: v.replace("{input}", "{pre}") for k, v in inputs.items()}
+                    if inputs
+                    else None
+                )
+                node = BenchmarkNode(
+                    converter,
+                    stage,
+                    module,
+                    param,
+                    inputs,
+                    outputs,
+                    param_id,
+                    after=most_recent_input_stage,
+                )
                 nodes.append(node)
 
     return nodes
@@ -57,7 +75,9 @@ def build_dag_from_definition(converter, output_folder):
 
 def find_initial_and_terminal_nodes(graph):
     initial_nodes = [node for node, in_degree in graph.in_degree() if in_degree == 0]
-    terminal_nodes = [node for node, out_degree in graph.out_degree() if out_degree == 0]
+    terminal_nodes = [
+        node for node, out_degree in graph.out_degree() if out_degree == 0
+    ]
     return initial_nodes, terminal_nodes
 
 
@@ -86,13 +106,17 @@ def exclude_paths(paths, path_exclusions):
     return updated_paths
 
 
-def plot_graph(g, output_file, scale_factor=1.0, node_spacing=0.1, figure_size=(12, 12)):
+def plot_graph(
+    g, output_file, scale_factor=1.0, node_spacing=0.1, figure_size=(12, 12)
+):
     layout = nx.circular_layout(g, scale=scale_factor)
 
     plt.figure(figsize=figure_size)
 
-    nx.draw_networkx_edges(g, layout, edge_color='#AAAAAA')
-    nx.draw_networkx_nodes(g, layout, nodelist=g.nodes(), node_size=100, node_color='#fc8d62')
+    nx.draw_networkx_edges(g, layout, edge_color="#AAAAAA")
+    nx.draw_networkx_nodes(
+        g, layout, nodelist=g.nodes(), node_size=100, node_color="#fc8d62"
+    )
     nodes = [node for node in g.nodes]
     for l in layout:
         layout[l][1] -= node_spacing

@@ -96,7 +96,9 @@ class ConverterTrait:
 
     def _compute_stage_order(self):
         stages = list(self.get_benchmark_stages().values())
-        stage_order_map = {self.get_stage_id(stage): pos for pos, stage in enumerate(stages)}
+        stage_order_map = {
+            self.get_stage_id(stage): pos for pos, stage in enumerate(stages)
+        }
         # FIXME very rudimentary computation of ordering
         # FIXME Might be more complex in future benchmarking scenarios
         # Assuming the order in which stages appear in the benchmark YAML is the actual order of the stages during execution

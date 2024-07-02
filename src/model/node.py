@@ -4,10 +4,17 @@ from omni_schema.datamodel.omni_schema import Repository
 
 
 class BenchmarkNode:
-    def __init__(self, converter,
-                 stage, module, parameters,
-                 inputs, outputs,
-                 param_id, after=None):
+    def __init__(
+        self,
+        converter,
+        stage,
+        module,
+        parameters,
+        inputs,
+        outputs,
+        param_id,
+        after=None,
+    ):
 
         self.converter = converter
         self.stage = stage
@@ -19,10 +26,12 @@ class BenchmarkNode:
 
         self.stage_id = converter.get_stage_id(stage)
         self.module_id = converter.get_module_id(module)
-        self.param_id = f'param_{param_id}' if parameters else 'default'
+        self.param_id = f"param_{param_id}" if parameters else "default"
 
     def get_id(self):
-        return BenchmarkNode.to_id(self.stage_id, self.module_id, self.param_id, self.after)
+        return BenchmarkNode.to_id(
+            self.stage_id, self.module_id, self.param_id, self.after
+        )
 
     def get_benchmark_name(self):
         return self.converter.get_benchmark_name()
@@ -40,28 +49,47 @@ class BenchmarkNode:
         return self.inputs if self.inputs else {}
 
     def get_explicit_inputs(self):
-        explicit_inputs = [self.converter.get_stage_explicit_inputs(i) for i in self.converter.get_stage_implicit_inputs(self.stage)]
+        explicit_inputs = [
+            self.converter.get_stage_explicit_inputs(i)
+            for i in self.converter.get_stage_implicit_inputs(self.stage)
+        ]
         return explicit_inputs
 
     def get_benchmark_name(self):
         return self.converter.get_benchmark_name()
 
-    def get_input_paths(self):
-        input_paths = []
-        for input in self.get_inputs():
-            input = os.path.basename(input).format(dataset='input')
-            input_paths.append(os.path.join('in', input))
+    def get_input_paths(self, config, return_as_dict=False):
+        input_paths = {}
+        inputs = self.inputs.items() if self.inputs else {}
+        for key, input in inputs:
+            input = os.path.basename(input)
+            input = input.replace("{dataset}", config["dataset"])
+            input = os.path.join(config["input"], input)
+            input_paths[key] = input
 
-        return input_paths
+        if return_as_dict:
+            return input_paths
+        else:
+            return list(input_paths.values())
 
     def get_outputs(self):
         return self.outputs if self.outputs else []
 
-    def get_output_paths(self):
+    def get_output_paths(self, config):
         output_paths = []
+
+        pre = config.get("input", config.get("output"))
+        dataset = config["dataset"]
         for output in self.get_outputs():
-            output = os.path.basename(output).format(dataset='output')
-            output_paths.append(os.path.join('out', output))
+            output = output.format(
+                pre=pre,
+                dataset=dataset,
+                stage=self.stage_id,
+                module=self.module_id,
+                params=self.param_id,
+            )
+
+            output_paths.append(output)
 
         return output_paths
 
@@ -85,8 +113,12 @@ class BenchmarkNode:
 
     def __eq__(self, other):
         if isinstance(other, BenchmarkNode):
-            return (self.stage_id, self.module_id, self.parameters, self.inputs) == \
-                (other.stage_id, other.module_id, other.parameters, other.inputs)
+            return (self.stage_id, self.module_id, self.parameters, self.inputs) == (
+                other.stage_id,
+                other.module_id,
+                other.parameters,
+                other.inputs,
+            )
         return False
 
     def __hash__(self):
@@ -94,7 +126,7 @@ class BenchmarkNode:
 
     @staticmethod
     def to_id(stage_id, module_id, param_id, after_stage_id=None):
-        node_id = f'{stage_id}-{module_id}-{param_id}'
-        node_id += f'-after_{after_stage_id}' if after_stage_id else ''
+        node_id = f"{stage_id}-{module_id}-{param_id}"
+        node_id += f"-after_{after_stage_id}" if after_stage_id else ""
 
         return node_id
