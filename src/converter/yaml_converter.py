@@ -99,12 +99,6 @@ class YamlConverter(ConverterTrait):
         else:
             return False
 
-    def is_terminal(self, stage):
-        if 'terminal' in stage.keys() and stage['terminal']:
-            return True
-        else:
-            return False
-
     def get_after(self, stage):
         if 'after' in stage.keys():
             return stage['after']

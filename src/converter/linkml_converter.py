@@ -108,12 +108,6 @@ class LinkMLConverter(ConverterTrait):
         else:
             return False
 
-    def is_terminal(self, stage):
-        if stage.outputs is None or len(stage.outputs) == 0: # FIXME Might not work always
-            return stage.terminal
-        else:
-            return False
-
     def get_after(self, stage):
         return stage.after
 

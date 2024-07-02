@@ -52,9 +52,6 @@ class ConverterTrait:
     def is_initial(self, stage):
         raise NotImplementedError("Method not implemented yet")
 
-    def is_terminal(self, stage):
-        raise NotImplementedError("Method not implemented yet")
-
     def get_after(self, stage):
         raise NotImplementedError("Method not implemented yet")
 

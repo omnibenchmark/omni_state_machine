@@ -113,9 +113,8 @@ try:
     # Execute module code
     module_name = snakemake.rule
 
-    # TODO Fix logic of inferring output dirname
     output_dir = os.path.commonpath(snakemake.output)
-    if os.path.splitext(output_dir)[1] != '':
+    if len(snakemake.output) == 1:
         output_dir = os.path.dirname(output_dir)
 
     dataset = snakemake.wildcards.dataset
