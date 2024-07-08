@@ -1,5 +1,5 @@
 import os
-from typing import TextIO, List
+from typing import TextIO, List, Optional
 
 from src.model import Benchmark, BenchmarkNode
 from src.workflow.workflow import WorkflowEngine
@@ -123,7 +123,7 @@ class SnakemakeEngine(WorkflowEngine):
 
         # Prepare the argv list
         argv = self._prepare_argv(
-            snakefile, input_dir, dataset, cores, dryrun, work_dir, **snakemake_kwargs
+            snakefile, cores, dryrun, work_dir, input_dir, dataset, **snakemake_kwargs
         )
 
         # Execute snakemake script
@@ -194,11 +194,11 @@ class SnakemakeEngine(WorkflowEngine):
     @staticmethod
     def _prepare_argv(
         snakefile: str,
-        input_dir: str,
-        dataset: str,
         cores: int,
         dryrun: bool,
         work_dir: str,
+        input_dir: Optional[str] = None,
+        dataset: Optional[str] = None,
         **snakemake_kwargs,
     ):
         """Prepare arguments to input to the snakemake cli"""
