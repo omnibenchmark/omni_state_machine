@@ -15,10 +15,8 @@ from src.workflow.snakemake.snakemake import SnakemakeEngine
 
 
 def main(benchmark_file):
-    converter = LinkMLConverter(benchmark_file)
-    validator = Validator()
-    converter = validator.validate(converter)
-    benchmark = Benchmark(converter)
+    benchmark = Benchmark(benchmark_file)
+    converter = benchmark.get_converter()
     print(benchmark.get_definition())
 
     stages = converter.get_benchmark_stages()

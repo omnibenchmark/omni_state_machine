@@ -1,14 +1,25 @@
+from pathlib import Path
+
 import src.model.dag_operations as dag
+from src.converter import LinkMLConverter
 from src.utils.helpers import *
+from src.validation import Validator
 
 
 class Benchmark:
-    def __init__(self, converter, output_folder="out"):
+    def __init__(self, benchmark_yaml: Path, out_dir: str = "out"):
+        converter = LinkMLConverter(benchmark_yaml)
+        validator = Validator()
+        converter = validator.validate(converter)
+
         self.converter = converter
-        self.output_folder = output_folder
-        self.G = dag.build_dag_from_definition(converter, self.output_folder)
+        self.out_dir = out_dir
+        self.G = dag.build_dag_from_definition(converter, self.out_dir)
 
         self.execution_paths = None
+
+    def get_converter(self):
+        return self.converter
 
     def get_benchmark_name(self):
         return self.converter.get_benchmark_name()
@@ -42,10 +53,10 @@ class Benchmark:
         execution_paths = self.get_execution_paths()
 
         output_paths = [
-            format_name(output, self.output_folder)
+            format_name(output, self.out_dir)
             for path in execution_paths
             for output in self._construct_output_paths(
-                prefix=self.output_folder, nodes=path
+                prefix=self.out_dir, nodes=path
             )
         ]
 
