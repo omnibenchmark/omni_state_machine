@@ -69,11 +69,14 @@ class SnakemakeEngine(WorkflowEngine):
         os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = benchmark.get_definition_file()
+        name = benchmark.get_benchmark_name()
+        version = benchmark.get_benchmark_version()
+        author = benchmark.get_benchmark_author()
 
         # Serialize Snakemake file
         snakefile_path = os.path.join(output_dir, "Snakefile")
         with open(snakefile_path, "w") as f:
-            self._write_snakefile_header(f)
+            self._write_snakefile_header(f, name, version, author)
             self._write_includes(f, INCLUDES)
 
             # Load benchmark from yaml file
@@ -147,11 +150,14 @@ class SnakemakeEngine(WorkflowEngine):
         os.makedirs(output_dir, exist_ok=True)
 
         benchmark_file = node.get_definition_file()
+        name = node.get_benchmark_name()
+        version = node.get_benchmark_version()
+        author = node.get_benchmark_author()
 
         # Serialize Snakemake file
         snakefile_path = os.path.join(output_dir, "Snakefile")
         with open(snakefile_path, "w") as f:
-            self._write_snakefile_header(f)
+            self._write_snakefile_header(f, name, version, author)
             self._write_includes(f, INCLUDES)
 
             # Load benchmark from yaml file
@@ -169,16 +175,24 @@ class SnakemakeEngine(WorkflowEngine):
         return snakefile_path
 
     @staticmethod
-    def _write_snakefile_header(f: TextIO):
+    def _write_snakefile_header(f: TextIO, benchmark_name: str, benchmark_version: str, benchmark_author: str):
         """Write header for the generated Snakefile"""
 
         f.write("#!/usr/bin/env snakemake -s\n")
-        f.write("##\n")
-        f.write("## Snakefile to orchestrate YAML-defined omnibenchmarks\n")
-        f.write("##\n")
-        f.write(
-            f"## This Snakefile has been automatically generated on {datetime.now()}\n"
-        )
+        f.write("#############################################\n")
+        f.write("# Snakefile for Orchestrating YAML-defined OmniBenchmarks\n")
+        f.write("#############################################\n")
+        f.write("# \n")
+        f.write(f"# This Snakefile has been automatically generated on {datetime.now()}\n")
+        f.write("# \n")
+        f.write("# Benchmark Details:\n")
+        f.write(f"# - Name: {benchmark_name}\n")
+        f.write(f"# - Version: {benchmark_version}\n")
+        f.write("# \n")
+        f.write("# Author Information:\n")
+        f.write(f"# - Contact: {benchmark_author}\n")
+        f.write("#\n")
+        f.write("#############################################\n")
         f.write("\n")
 
     @staticmethod

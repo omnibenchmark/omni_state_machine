@@ -18,6 +18,16 @@ class LinkMLConverter:
 
         return self.model.name if self.model.name else self.model.id
 
+    def get_version(self) -> str:
+        """Get version of the benchmark"""
+
+        return self.model.version
+
+    def get_author(self) -> str:
+        """Get author of the benchmark"""
+
+        return self.model.benchmarker
+
     def get_definition(self) -> omni_schema.Benchmark:
         """Get underlying benchmark"""
 

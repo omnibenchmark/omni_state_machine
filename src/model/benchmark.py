@@ -24,6 +24,12 @@ class Benchmark:
     def get_benchmark_name(self):
         return self.converter.get_name()
 
+    def get_benchmark_version(self):
+        return self.converter.get_version()
+
+    def get_benchmark_author(self):
+        return self.converter.get_author()
+
     def get_definition(self):
         return self.converter.get_definition()
 
