@@ -1,50 +1,52 @@
 ---
 id: Benchmark_002
-name: starts_to_be_explicit
-description: simple benchmark, somewhat explicit, simple params
+name: peiying_with_easyconfigs
+description: peiying's fixed yaml
+benchmarker: "Peiying Cai at Robinsons Lab"
 version: 1.0
-platform: https://github.com/
 storage: https://storage.github.com/
-orchestrator:
-  name: orchestrator
-  url: https://github.com/omnibenchmark/test/orchestrator
-validator:
-  name: validator
-  url: https://github.com/omnibenchmark/test/validator
-  schema_url: https://github.com/omnibenchmark/omni_essentials
-steps:
+storage_api: S3
+benchmark_yaml_spec: 0.01
+software_environments:
+  R:
+    description: "R 4.3.3 with gfbf-2023 toolchain"
+    easyconfig: R_4.3.3-gfbf-2023b.eb
+    envmodule: R/4.3.3-gfbf-2023b
+    conda: R_4.3.3_try.yaml # or perhaps not
+    apptainer: http://registry.ch/R_4.3.3-gfbf-2023b.sif
+  scanpy:
+    description: "Scanpy vX for python3.12.0 with gfbf-2023 toolchain"
+    easyconfig: scanpy_vX-gfbf-2023b.eb
+    envmodule: scanpy/vX-gfbf-2023b
+    conda: scanpy_vX_test.yaml
+    apptainer: http://registry.ch/scanpy_vX-gfbf-2023b.sif
+stages:
   - id: data
-    name: data
-    initial: true
-    members:
+    modules:
       - id: libd_DLPFC
-        name: libd_DLPFC
-        repo: omnibenchmark/test/libd_DLPFC
+        software_environment: "R"
+        repository:
+          url: https://github.com/omnibenchmark-example/data
+          commit: 061a981
     outputs:
       - id: data.counts
-        name: counts
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
       - id: data.meta
-        name: meta
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.meta.json"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.meta.json"
       - id: data.label
-        name: label
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.label.json"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.label.json"
       - id: data.coord
-        name: coordinates
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.coord.json"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.coord.json"
       - id: data.ncluster
-        name: data_num_cluster
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}_ncluster.txt"
+        path: "{input}/{stage}/{module}/{params}/{dataset}_ncluster.txt"
 
   - id: normalization
-    name: normalization
-    after:
-      - data
-    members:
+    modules:
       - id: lognorm
-        name: lognorm
-        repo: omnibenchmark/test/lognorm
+        software_environment: "R"
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: 24579a8
     inputs:
       - entries: [
           data.counts,
@@ -52,20 +54,20 @@ steps:
         ]
     outputs:
       - id: data.normalized
-        name: normalized
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
 
   - id: select_counts
-    name: feature_selection_counts
-    after:
-      - normalization
-    members:
+    modules:
       - id: scanpy
-        name: scanpy
-        repo: omnibenchmark/test/scanpy
+        software_environment: "scanpy"
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: 24579a8
       - id: seurat
-        name: seurat
-        repo: omnibenchmark/test/seurat
+        software_environment: "scanpy"
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: 24579a8
     inputs:
       - entries: [
           data.normalized,
@@ -74,22 +76,22 @@ steps:
         ]
     outputs:
       - id: select_counts.selected
-        name: selected
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
 
   - id: select_lognorm
-    name: feature_selection_lognorm
-    after:
-      - normalization
-    members:
+    modules:
       - id: moran
-        name: moran
-        repo: omnibenchmark/test/moran
         exclude: [select_counts]
+        software_environment: "R"
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: 24579a8
       - id: scran
-        name: scran
-        repo: omnibenchmark/test/scran
         exclude: [select_counts]
+        software_environment: "R"
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: 24579a8
     inputs:
       - entries: [
           data.normalized,
@@ -98,18 +100,15 @@ steps:
         ]
     outputs:
       - id: select_lognorm.selected
-        name: selected
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
 
   - id: dimred
-    name: PCA
-    after:
-      - select_counts
-      - select_lognorm
-    members:
+    modules:
       - id: sklearn
-        name: sklearn
-        repo: omnibenchmark/test/sklearn
+        software_environment: "scanpy"
+        repository:
+          url : https://github.com/omnibenchmark-example/method.git
+          commit: 709e114
         parameters:
           - values: ["-scale false"]
     inputs:
@@ -121,17 +120,15 @@ steps:
           ]
     outputs:
       - id: pca.matrix
-        name: dimensionality_reduction
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
 
   - id: methods
-    name: methods
-    after:
-      - dimred
-    members:
+    modules:
       - id: BayesSpace
-        name: BayesSpace
-        repo: omnibenchmark/test/BayesSpace
+        software_environment: "scanpy"
+        repository:
+          url: git@github.com:omnibenchmark-example/metric.git
+          commit: ba781d7
     inputs:
       - entries: [
           data.meta,
@@ -140,5 +137,4 @@ steps:
         ]
     outputs:
       - id: methods.label
-        name: labeling
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.model.out.gz"

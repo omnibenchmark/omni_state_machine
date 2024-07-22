@@ -1,107 +1,162 @@
 import os
+from pathlib import Path
+from typing import Union, Optional, Dict, List
+
+from omni_schema.datamodel import omni_schema
+
+from src.utils.helpers import merge_dict_list, load_yaml
 
 
-class ConverterTrait:
+class LinkMLConverter:
 
-    def __init__(self, benchmark_file):
-        self.stage_order_map = None
+    def __init__(self, benchmark_file: Path):
         self.benchmark_file = os.path.abspath(benchmark_file)
+        self.model = load_yaml(benchmark_file)
 
-    def get_stage_id(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+    def get_name(self) -> str:
+        """Get name of the benchmark"""
 
-    def get_module_id(self, module):
-        raise NotImplementedError("Method not implemented yet")
+        return self.model.name if self.model.name else self.model.id
 
-    def get_benchmark_definition(self):
-        raise NotImplementedError("Method not implemented yet")
+    def get_definition(self) -> omni_schema.Benchmark:
+        """Get underlying benchmark"""
 
-    def get_benchmark_definition_file(self):
-        raise NotImplementedError("Method not implemented yet")
+        return self.model
 
-    def get_benchmark_stages(self):
-        raise NotImplementedError("Method not implemented yet")
+    def get_stages(self) -> Dict[str, omni_schema.Stage]:
+        """Get benchmark stages"""
 
-    def get_benchmark_stage(self, stage_id):
-        raise NotImplementedError("Method not implemented yet")
+        return dict([(x.id, x) for x in self.model.stages])
 
-    def get_modules_by_stage(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+    def get_stage(self, stage_id: str) -> Optional[omni_schema.Stage]:
+        """Get stage by stage_id"""
 
-    def get_stage_implicit_inputs(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+        return self.get_stages()[stage_id]
 
-    def get_inputs_stage(self, implicit_inputs):
-        raise NotImplementedError("Method not implemented yet")
+    def get_stage_by_output(self, output_id: str) -> Optional[omni_schema.Stage]:
+        """Get stage that returns output with output_id"""
 
-    def get_stage_explicit_inputs(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+        stage_by_output: dict = {}
+        for stage_id, stage in self.get_stages().items():
+            stage_by_output.update({output.id: stage for output in stage.outputs})
 
-    def get_stage_outputs(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+        return stage_by_output.get(output_id)
 
-    def get_module_excludes(self, module):
-        raise NotImplementedError("Method not implemented yet")
+    def get_modules_by_stage(self, stage: Union[str, omni_schema.Stage]) -> Dict[str, omni_schema.Module]:
+        """Get modules by stage/stage_id"""
 
-    def get_module_parameters(self, module):
-        raise NotImplementedError("Method not implemented yet")
+        if isinstance(stage, str):
+            stage = self.get_stages()[stage]
 
-    def get_module_repository(self, module):
-        raise NotImplementedError("Method not implemented yet")
+        return dict([(x.id, x) for x in stage.modules])
 
-    def is_initial(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+    def get_stage_implicit_inputs(self, stage: Union[str, omni_schema.Stage]) -> List[str]:
+        """Get implicit inputs of a stage by stage/stage_id"""
 
-    def is_terminal(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+        if isinstance(stage, str):
+            stage = self.get_stages()[stage]
 
-    def get_after(self, stage):
-        raise NotImplementedError("Method not implemented yet")
+        return [input.entries for input in stage.inputs]
 
-    def get_stage_ids(self):
-        raise NotImplementedError("Method not implemented yet")
+    def get_explicit_inputs(self, input_ids: List[str]) -> Dict[str, str]:
+        """Get explicit inputs of a stage by input_id(s)"""
 
-    def get_module_ids(self):
-        raise NotImplementedError("Method not implemented yet")
+        all_stages_outputs = []
+        for stage_id in self.get_stages():
+            outputs = self.get_stage_outputs(stage=stage_id)
+            outputs = {
+                    key: value.format(
+                        input="{input}",
+                        stage=stage_id,
+                        module="{module}",
+                        params="{params}",
+                        dataset="{dataset}",
+                    )
+                    for key, value in outputs.items()
+                }
+            all_stages_outputs.append(outputs)
 
-    def get_output_ids(self):
-        raise NotImplementedError("Method not implemented yet")
+        all_stages_outputs = merge_dict_list(all_stages_outputs)
 
-    def get_initial_datasets(self):
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if self.is_initial(stage):
-                return self.get_modules_by_stage(stage)
+        explicit = {key: None for key in input_ids}
+        for in_deliverable in input_ids:
+            # beware stage needs to be substituted
+            curr_output = all_stages_outputs[in_deliverable]
 
-    def get_initial_stage(self):
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if self.is_initial(stage):
-                return stage
+            explicit[in_deliverable] = curr_output
 
-    def get_benchmark_modules(self):
+        return explicit
+
+    def get_stage_outputs(self, stage: Union[str, omni_schema.Stage]) -> Dict[str, str]:
+        """Get outputs of a stage by stage/stage_id"""
+
+        if isinstance(stage, str):
+            stage = self.get_stages()[stage]
+
+        return dict([(output.id, output.path) for output in stage.outputs])
+
+    def get_output_stage(self, output_id: str) -> omni_schema.Stage:
+        """Get stage that returns output with out_id"""
+
+        stage_by_output: dict = {}
+        for stage in self.model.stages:
+            stage_by_output.update({out.id: stage for out in stage.outputs})
+
+        return stage_by_output.get(output_id)
+
+    def get_module_excludes(self, module: Union[str, omni_schema.Module]) -> List[str]:
+        """Get module excludes by module/module_id"""
+
+        if isinstance(module, str):
+            module = self.get_modules()[module]
+
+        return module.exclude
+
+    def get_module_parameters(self, module: Union[str, omni_schema.Module]) -> List[str]:
+        """Get module parameters by module/module_id"""
+
+        if isinstance(module, str):
+            module = self.get_modules()[module]
+
+        params = None
+        if module.parameters is not None:
+            params = [x.values for x in module.parameters]
+
+        return params
+
+    def get_module_repository(self, module: Union[str, omni_schema.Module]) -> omni_schema.Repository:
+        """Get module repository by module/module_id"""
+
+        if isinstance(module, str):
+            module = self.get_modules()[module]
+
+        return module.repository
+
+    def is_initial(self, stage: omni_schema.Stage) -> bool:
+        """Check if stage is initial"""
+
+        if stage.inputs is None or len(stage.inputs) == 0:
+            return True
+        else:
+            return False
+
+    def get_outputs(self) -> Dict[str, str]:
+        """Get outputs"""
+
+        outputs = {}
+        for stage_id, stage in self.get_stages().items():
+            for output in stage.outputs:
+                outputs[output.id] = output
+
+        return outputs
+
+    def get_modules(self) -> Dict[str, omni_schema.Module]:
+        """Get modules"""
+
         modules = {}
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
+
+        for stage_id, stage in self.get_stages().items():
             modules_in_stage = self.get_modules_by_stage(stage)
             modules.update(modules_in_stage)
 
         return modules
-
-    def stage_order(self, element):
-        if self.stage_order_map is None:
-            self.stage_order_map = self._compute_stage_order()
-
-        return self.stage_order_map.get(element)
-
-    def _compute_stage_order(self):
-        stages = list(self.get_benchmark_stages().values())
-        stage_order_map = {self.get_stage_id(stage): pos for pos, stage in enumerate(stages)}
-        # FIXME very rudimentary computation of ordering
-        # FIXME Might be more complex in future benchmarking scenarios
-        # Assuming the order in which stages appear in the benchmark YAML is the actual order of the stages during execution
-
-        return stage_order_map

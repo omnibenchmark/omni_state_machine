@@ -1,56 +1,65 @@
 ---
 id: Benchmark_001
-name: starts_to_be_explicit
 description: simple benchmark, somewhat explicit, simple params
 version: 1.0
-platform: https://github.com/
+benchmarker: "John Doe at Robinsons lab, john.doe@uzh.ch"
 storage: https://storage.github.com/
-orchestrator:
-  name: orchestrator
-  url: https://github.com/omnibenchmark/test/orchestrator
-validator:
-  name: validator
-  url: https://github.com/omnibenchmark/test/validator
-  schema_url: https://github.com/omnibenchmark/omni_essentials
-steps:
+storage_api: S3
+benchmark_yaml_spec: 0.01
+software_environments:
+  R:
+    description: "R 4.3.3 with gfbf-2023 toolchain"
+    easyconfig: R_4.3.3-gfbf-2023b.eb
+    envmodule: R/4.3.3-gfbf-2023b
+    conda: R_4.3.3_try.yaml # or perhaps not
+    apptainer: http://registry.ch/R_4.3.3-gfbf-2023b.sif
+  python:
+    description: "Ppython3.12.0 with gfbf-2023 toolchain"
+    easyconfig: python_vX-gfbf-2023b.eb
+    envmodule: python/vX-gfbf-2023b
+    conda: python_vX_test.yaml
+    apptainer: http://registry.ch/python_vX-gfbf-2023b.sif
+stages:
   - id: data
-    name: data
-    initial: true
-    members:
+    modules:
       - id: D1
-        name: D1
-        repo: omnibenchmark/test/D1
+        name: "Dataset 1"
+        software_environment: "python"
+        repository:
+          url: https://github.com/omnibenchmark-example/data.git
+          commit: 41aaa0a
       - id: D2
-        name: D2
-        repo: omnibenchmark/test/D2
+        name: "Dataset 2"
+        software_environment: "python"
+        repository:
+          url: https://github.com/omnibenchmark-example/data.git
+          commit: 41aaa0a
     outputs:
       - id: data.counts
-        name: counts
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
       - id: data.meta
-        name: meta
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.meta.json"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.meta.json"
       - id: data.data_specific_params
-        name: data_specific_params
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}_params.txt"
+        path: "{input}/{stage}/{module}/{params}/{dataset}_params.txt"
 
   - id: process
-    name: process
-    after:
-      - data
-    members:
+    modules:
       - id: P1
-        name: P1
-        repo: omnibenchmark/test/P1
+        software_environment: "R"
         parameters:
           - values: ["-a 0", "-b 0.1"]
           - values: ["-a 1", "-b 0.1"]
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: ac5365e
       - id: P2
-        name: P2
-        repo: omnibenchmark/test/P2
+        software_environment: "R"
         parameters:
-          - values: ["-a 0", "-c 0"]
-          - values: ["-a 1", "-c 0.1"]
+          - values: ["-a 0", "-b 0"]
+          - values: ["-a 1", "-b 0.1"]
+        repository:
+          url: https://github.com/omnibenchmark-example/process.git
+          commit: ac5365e
     inputs:
       - entries: [
           data.counts,
@@ -58,26 +67,26 @@ steps:
         ]
     outputs:
       - id: process.filtered
-        name: filtered
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.txt.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.txt.gz"
 
   - id: methods
-    name: methods
-    after:
-      - process
-    members:
+    modules:
       - id: M1
-        name: M1
-        repo: benchmark/test/M1
+        software_environment: "python"
         exclude: [ D2 ]
+        repository:
+          url: https://github.com/omnibenchmark-example/method.git
+          commit: 1004cdd
       - id: M2
-        name: M2
-        repo: omnibenchmark/test/M2
+        software_environment: "python"
         parameters:
           - values: ["-d1", "-e 1"]
           - values: ["-d1", "-e 2"]
         exclude:
           - D1
+        repository:
+          url: https://github.com/omnibenchmark-example/method.git
+          commit: 1004cdd
     inputs:
       - entries: [
           data.counts,
@@ -91,24 +100,25 @@ steps:
         ]
     outputs:
       - id: methods.mapping
-        name: mapping
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.model.out.gz"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.model.out.gz"
 
   - id: metrics
-    name: metrics
-    after:
-      - methods
-    terminal: true
-    members:
+    modules:
       - id: m1
-        name: m1
-        repo: omnibenchmark/test/m1
+        software_environment: "python"
+        repository:
+          url: https://github.com/omnibenchmark-example/metric.git
+          commit: 5587457
       - id: m2
-        name: m2
-        repo: omnibenchmark/test/m2
+        software_environment: "python"
+        repository:
+          url: https://github.com/omnibenchmark-example/metric.git
+          commit: 5587457
       - id: m3
-        name: m3
-        repo: omnibenchmark/test/m3
+        software_environment: "python"
+        repository:
+          url: https://github.com/omnibenchmark-example/metric.git
+          commit: 5587457
     inputs:
       - entries: [
           methods.mapping,
@@ -117,5 +127,4 @@ steps:
       ]
     outputs:
       - id: metrics.mapping
-        name: mapping
-        path: "{input_dirname}/{stage}/{module}/{params}/{name}.results.txt"
+        path: "{input}/{stage}/{module}/{params}/{dataset}.results.txt"

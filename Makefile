@@ -1,6 +1,6 @@
 install:
 	pipx install pipenv
-	pipenv install -r requirements.txt
+	pipenv update
 activate:
 	pipenv shell
 serialize:
@@ -13,4 +13,4 @@ graph:
 	snakemake --dag | dot -Tpng > workflow_dag.png
 clean:
 	rm -f benchmark.pkl Snakefile
-	rm -rf ./in ./out ./log ./data/D1 ./data/D2 workflow_dag.png output_dag.png
+	rm -rf ./in ./out ./log ./data/D1 ./data/D2 workflow_dag.png output_dag.png ./.snakemake

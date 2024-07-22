@@ -1,7 +1,7 @@
 import re
 from itertools import takewhile
 from pathlib import Path
-from typing import List, Set, Tuple, Union, NamedTuple
+from typing import List, Set, Tuple, Union, NamedTuple, Dict, Any
 
 from src.model import BenchmarkNode, Benchmark
 
@@ -9,7 +9,7 @@ from src.model import BenchmarkNode, Benchmark
 class Wildcards(NamedTuple):
     pre: str
     post: str
-    name: str
+    dataset: str
 
 
 def format_output_templates_to_be_expanded(node: BenchmarkNode) -> List[str]:
@@ -19,48 +19,58 @@ def format_output_templates_to_be_expanded(node: BenchmarkNode) -> List[str]:
     is_initial = node.is_initial()
 
     if not is_initial:
-        outputs = [re.sub(r'\/.*\/', '/{post}/', o, count=1) for o in outputs]
+        outputs = [re.sub(r"\/.*\/", "/{post}/", o, count=1) for o in outputs]
 
     # print(f'Output: {node.stage_id}: {outputs}')
     return outputs
 
 
-def format_input_templates_to_be_expanded(benchmark: Benchmark, wildcards: Wildcards) -> List[str]:
+def format_input_templates_to_be_expanded(
+    benchmark: Benchmark, wildcards: Wildcards, return_as_dict=False
+) -> dict[str, str] | list[str]:
     """Formats benchmark inputs that will be expanded according to Snakemake's engine"""
 
     pre = wildcards.pre
     post = wildcards.post
-    name = wildcards.name
+    dataset = wildcards.dataset
 
     nodes = benchmark.get_nodes()
     stage_ids = benchmark.get_stage_ids()
 
     pre_stages = _extract_stages_from_path(pre, stage_ids)
-    after_stage_id, _, _ = _match_node_format(pre_stages[-1]) if len(pre_stages) > 0 else None
+    after_stage_id, _, _ = (
+        _match_node_format(pre_stages[-1]) if len(pre_stages) > 0 else None
+    )
 
     stage_id, module_id, param_id = _match_node_format(post)
 
     node_hash = hash(BenchmarkNode.to_id(stage_id, module_id, param_id, after_stage_id))
     matching_node = next((node for node in nodes if hash(node) == node_hash), None)
     if matching_node:
-        node_inputs = matching_node.get_inputs()
+        node_inputs = matching_node.get_inputs_dict()
 
-        inputs = _match_inputs(node_inputs, pre_stages, pre, name)
+        inputs = _match_inputs(node_inputs, pre_stages, pre, dataset)
 
         # print(f'Inputs: {stage_id} {module_id} {param_id}: {inputs}')
-        return inputs
-
+        if return_as_dict:
+            return inputs
+        else:
+            return inputs.values()
     else:
-        return []
+        return {} if return_as_dict else []
 
 
-def _extract_stages_from_path(path: str, known_stage_ids: Set[str]) -> List[Union[str, tuple]]:
+def _extract_stages_from_path(
+    path: str, known_stage_ids: Set[str]
+) -> List[Union[str, tuple]]:
     def is_known_stage(part: str) -> bool:
         return part in known_stage_ids
 
     def find_sub_parts(start_index: int) -> Union[str, tuple]:
-        sub_parts = list(takewhile(lambda x: x not in known_stage_ids, parts[start_index + 1:]))
-        return tuple(parts[start_index:start_index + 1 + len(sub_parts)])
+        sub_parts = list(
+            takewhile(lambda x: x not in known_stage_ids, parts[start_index + 1 :])
+        )
+        return tuple(parts[start_index : start_index + 1 + len(sub_parts)])
 
     if not path:
         return []
@@ -86,22 +96,26 @@ def _match_node_format(to_match: Union[str, tuple]) -> Tuple[str, str, str]:
     return stage_id, module_id, param_id
 
 
-def _match_input_module(input: str, stages: List[Tuple[str]], name: str) -> str:
-    expected_input_module = input.split('{pre}/')[1].split('/{module}')[0]
-    matching_stage = next((tup for tup in stages if tup[0] == expected_input_module), None)
+def _match_input_module(input: str, stages: List[Tuple[str]], dataset: str) -> str:
+    expected_input_module = input.split("{pre}/")[1].split("/{module}")[0]
+    matching_stage = next(
+        (tup for tup in stages if tup[0] == expected_input_module), None
+    )
 
     if matching_stage:
         matched_module = matching_stage[1]
 
-        input = input.replace('{module}', matched_module)
-        input = input.replace('{name}', name)
-        if '{params}' in input:
-            matched_params = next((x for x in matching_stage[2:] if 'param' or 'default' in x), None)
-            input = input.replace('{params}', matched_params)
+        input = input.replace("{module}", matched_module)
+        input = input.replace("{dataset}", dataset)
+        if "{params}" in input:
+            matched_params = next(
+                (x for x in matching_stage[2:] if "param" or "default" in x), None
+            )
+            input = input.replace("{params}", matched_params)
 
         return input
     else:
-        raise RuntimeError(f'Could not find matching stage for {input} in {stages}')
+        raise RuntimeError(f"Could not find matching stage for {input} in {stages}")
 
 
 def _match_input_prefix(input: str, pre: str) -> str:
@@ -113,17 +127,19 @@ def _match_input_prefix(input: str, pre: str) -> str:
     return formatted_input
 
 
-def _match_inputs(inputs: List[str], stages: List[Tuple[str]], pre: str, name: str) -> List[str]:
+def _match_inputs(
+    inputs: dict[str, str], stages: List[Tuple[str]], pre: str, dataset: str
+) -> dict[str, str]:
     all_matched = True
 
-    formatted_inputs = []
-    for input in inputs:
-        formatted_input = _match_input_module(input, stages, name)
+    formatted_inputs = {}
+    for key, input in inputs.items():
+        formatted_input = _match_input_module(input, stages, dataset)
         if not formatted_input:
             all_matched = False
             break
         else:
             formatted_input = _match_input_prefix(formatted_input, pre)
-            formatted_inputs.append(formatted_input)
+            formatted_inputs[key] = formatted_input
 
-    return formatted_inputs if all_matched else []
+    return formatted_inputs if all_matched else {}
