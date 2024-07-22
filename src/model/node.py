@@ -24,8 +24,8 @@ class BenchmarkNode:
         self.outputs = outputs
         self.after = after
 
-        self.stage_id = converter.get_stage_id(stage)
-        self.module_id = converter.get_module_id(module)
+        self.stage_id = stage.id
+        self.module_id = module.id
         self.param_id = f"param_{param_id}" if parameters else "default"
 
     def get_id(self):
@@ -34,10 +34,10 @@ class BenchmarkNode:
         )
 
     def get_benchmark_name(self):
-        return self.converter.get_benchmark_name()
+        return self.converter.get_name()
 
     def get_definition(self):
-        return self.converter.get_benchmark_definition()
+        return self.converter.get_definition()
 
     def get_definition_file(self):
         return self.converter.benchmark_file
@@ -50,13 +50,13 @@ class BenchmarkNode:
 
     def get_explicit_inputs(self):
         explicit_inputs = [
-            self.converter.get_stage_explicit_inputs(i)
+            self.converter.get_explicit_inputs(i)
             for i in self.converter.get_stage_implicit_inputs(self.stage)
         ]
         return explicit_inputs
 
     def get_benchmark_name(self):
-        return self.converter.get_benchmark_name()
+        return self.converter.get_name()
 
     def get_input_paths(self, config, return_as_dict=False):
         input_paths = {}

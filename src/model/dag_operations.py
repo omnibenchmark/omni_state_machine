@@ -1,13 +1,19 @@
+from functools import reduce
+from typing import List, Tuple
+
 import networkx as nx
 import matplotlib.pyplot as plt
+import omni_schema.datamodel.omni_schema
 
+from src.converter import LinkMLConverter
 from src.model.node import BenchmarkNode
+from src.validation import ValidationError
 
 
-def expend_stage_nodes(converter, stage, output_folder):
+def expend_stage_nodes(converter: LinkMLConverter, stage: omni_schema.datamodel.omni_schema.Stage, out_dir: str, stage_ordering: List[str]) -> List[BenchmarkNode]:
     nodes = []
 
-    input_dirname = output_folder if converter.is_initial(stage) else "{pre}"
+    input_dirname = out_dir if converter.is_initial(stage) else "{pre}"
     stage_outputs = converter.get_stage_outputs(stage).values()
     outputs = [x.replace("{input}", input_dirname) for x in stage_outputs]
 
@@ -24,20 +30,13 @@ def expend_stage_nodes(converter, stage, output_folder):
 
         for param_id, param in enumerate(parameters):
             for inputs in inputs_for_stage:
-                required_input_stages = (
-                    set(converter.get_inputs_stage(inputs).values()) if inputs else None
-                )
-                most_recent_input_stage = (
-                    sorted(list(required_input_stages), key=converter.stage_order)[-1]
-                    if inputs
-                    else None
-                )
-                inputs = converter.get_stage_explicit_inputs(inputs) if inputs else None
-                inputs = (
-                    {k: v.replace("{input}", "{pre}") for k, v in inputs.items()}
-                    if inputs
-                    else None
-                )
+                latest_stage = None
+                if inputs:
+                    stages_by_output = list(set([converter.get_stage_by_output(input_id).id for input_id in inputs]))
+                    latest_stage = sorted(stages_by_output, key=stage_ordering.index)[-1]
+                    explicit_inputs = converter.get_explicit_inputs(inputs)
+                    inputs = {k: v.replace("{input}", "{pre}") for k, v in explicit_inputs.items()}
+
                 node = BenchmarkNode(
                     converter,
                     stage,
@@ -46,20 +45,22 @@ def expend_stage_nodes(converter, stage, output_folder):
                     inputs,
                     outputs,
                     param_id,
-                    after=most_recent_input_stage,
+                    after=latest_stage,
                 )
                 nodes.append(node)
 
     return nodes
 
 
-def build_dag_from_definition(converter, output_folder):
+def build_benchmark_dag(converter: LinkMLConverter, out_dir: str) -> nx.DiGraph:
     g = nx.DiGraph()
-    stages = converter.get_benchmark_stages()
+
+    G_stages = build_stage_dag(converter)
+    stage_ordering = compute_stage_order(G_stages)
+
     stage_nodes_map = {}
-    for stage_id in stages:
-        stage = stages[stage_id]
-        nodes = expend_stage_nodes(converter, stage, output_folder)
+    for stage_id, stage in converter.get_stages().items():
+        nodes = expend_stage_nodes(converter, stage, out_dir, stage_ordering)
         g.add_nodes_from(nodes)
         stage_nodes_map[stage_id] = nodes
 
@@ -73,7 +74,20 @@ def build_dag_from_definition(converter, output_folder):
     return g
 
 
-def find_initial_and_terminal_nodes(graph):
+def build_stage_dag(converter: LinkMLConverter) -> nx.DiGraph:
+    g = nx.DiGraph()
+
+    for stage_id, stage in converter.get_stages().items():
+        g.add_node(stage_id)
+        input_ids = [input_id for input in stage.inputs for input_id in input.entries]
+        dep_stages = [converter.get_output_stage(input_id) for input_id in input_ids]
+        for dep in dep_stages:
+            g.add_edge(dep.id, stage.id)
+
+    return g
+
+
+def find_initial_and_terminal_nodes(graph: nx.DiGraph) -> Tuple[List[BenchmarkNode], List[BenchmarkNode]]:
     initial_nodes = [node for node, in_degree in graph.in_degree() if in_degree == 0]
     terminal_nodes = [
         node for node, out_degree in graph.out_degree() if out_degree == 0
@@ -81,7 +95,7 @@ def find_initial_and_terminal_nodes(graph):
     return initial_nodes, terminal_nodes
 
 
-def list_all_paths(graph, source, target):
+def list_all_paths(graph: nx.DiGraph, source: BenchmarkNode, target: BenchmarkNode):
     all_paths = list(nx.all_simple_paths(graph, source=source, target=target))
     return all_paths
 
@@ -104,6 +118,16 @@ def exclude_paths(paths, path_exclusions):
             updated_paths.append(path)
 
     return updated_paths
+
+
+def compute_stage_order(stage_dag: nx.DiGraph) -> List:
+    try:
+        topological_order = list(nx.topological_sort(stage_dag))
+
+    except nx.NetworkXUnfeasible:
+        raise ValidationError("The stage graph has a cyclic dependencies. This benchmark can not be resolved")
+
+    return topological_order
 
 
 def plot_graph(

@@ -1,70 +1,70 @@
 import os
+from pathlib import Path
+from typing import Union, Optional, Dict, List
+
+from omni_schema.datamodel import omni_schema
 
 from src.utils.helpers import merge_dict_list, load_yaml
 
 
 class LinkMLConverter:
 
-    def __init__(self, benchmark_file):
-        self.stage_order_map = None
+    def __init__(self, benchmark_file: Path):
         self.benchmark_file = os.path.abspath(benchmark_file)
-        self.benchmark = load_yaml(benchmark_file)
+        self.model = load_yaml(benchmark_file)
 
-    def get_benchmark_name(self):
-        return self.benchmark.name if self.benchmark.name else self.benchmark.id
+    def get_name(self) -> str:
+        """Get name of the benchmark"""
 
-    def get_benchmark_definition(self):
-        return self.benchmark
+        return self.model.name if self.model.name else self.model.id
 
-    def get_stage_id(self, stage):
-        return stage.id
+    def get_definition(self) -> omni_schema.Benchmark:
+        """Get underlying benchmark"""
 
-    def get_module_id(self, module):
-        return module.id
+        return self.model
 
-    def get_benchmark_stages(self):
-        return dict([(x.id, x) for x in self.benchmark.stages])
+    def get_stages(self) -> Dict[str, omni_schema.Stage]:
+        """Get benchmark stages"""
 
-    def get_benchmark_stage(self, stage_id):
-        stages = self.get_benchmark_stages().values()
-        return next(stage for stage in stages if stage.id == stage_id)
+        return dict([(x.id, x) for x in self.model.stages])
 
-    def get_modules_by_stage(self, stage):
+    def get_stage(self, stage_id: str) -> Optional[omni_schema.Stage]:
+        """Get stage by stage_id"""
+
+        return self.get_stages()[stage_id]
+
+    def get_stage_by_output(self, output_id: str) -> Optional[omni_schema.Stage]:
+        """Get stage that returns output with output_id"""
+
+        stage_by_output: dict = {}
+        for stage_id, stage in self.get_stages().items():
+            stage_by_output.update({output.id: stage for output in stage.outputs})
+
+        return stage_by_output.get(output_id)
+
+    def get_modules_by_stage(self, stage: Union[str, omni_schema.Stage]) -> Dict[str, omni_schema.Module]:
+        """Get modules by stage/stage_id"""
+
+        if isinstance(stage, str):
+            stage = self.get_stages()[stage]
+
         return dict([(x.id, x) for x in stage.modules])
 
-    def get_stage_implicit_inputs(self, stage):
+    def get_stage_implicit_inputs(self, stage: Union[str, omni_schema.Stage]) -> List[str]:
+        """Get implicit inputs of a stage by stage/stage_id"""
+
         if isinstance(stage, str):
-            stage = self.get_benchmark_stages()[stage]
+            stage = self.get_stages()[stage]
 
         return [input.entries for input in stage.inputs]
 
-    def get_inputs_stage(self, implicit_inputs):
-        stages_map = {key: None for key in implicit_inputs}
-        if implicit_inputs is not None:
-            all_stages = self.get_benchmark_stages()
-            all_stages_outputs = []
-            for stage_id in all_stages:
-                outputs = self.get_stage_outputs(stage=stage_id)
-                outputs = {key: stage_id for key, value in outputs.items()}
-                all_stages_outputs.append(outputs)
+    def get_explicit_inputs(self, input_ids: List[str]) -> Dict[str, str]:
+        """Get explicit inputs of a stage by input_id(s)"""
 
-            all_stages_outputs = merge_dict_list(all_stages_outputs)
-            for in_deliverable in implicit_inputs:
-                # beware stage needs to be substituted
-                curr_output = all_stages_outputs[in_deliverable]
-
-                stages_map[in_deliverable] = curr_output
-
-        return stages_map
-
-    def get_stage_explicit_inputs(self, implicit_inputs):
-        explicit = {key: None for key in implicit_inputs}
-        if implicit_inputs is not None:
-            all_stages = self.get_benchmark_stages()
-            all_stages_outputs = []
-            for stage_id in all_stages:
-                outputs = self.get_stage_outputs(stage=stage_id)
-                outputs = {
+        all_stages_outputs = []
+        for stage_id in self.get_stages():
+            outputs = self.get_stage_outputs(stage=stage_id)
+            outputs = {
                     key: value.format(
                         input="{input}",
                         stage=stage_id,
@@ -74,104 +74,89 @@ class LinkMLConverter:
                     )
                     for key, value in outputs.items()
                 }
-                all_stages_outputs.append(outputs)
+            all_stages_outputs.append(outputs)
 
-            all_stages_outputs = merge_dict_list(all_stages_outputs)
-            for in_deliverable in implicit_inputs:
-                # beware stage needs to be substituted
-                curr_output = all_stages_outputs[in_deliverable]
+        all_stages_outputs = merge_dict_list(all_stages_outputs)
 
-                explicit[in_deliverable] = curr_output
+        explicit = {key: None for key in input_ids}
+        for in_deliverable in input_ids:
+            # beware stage needs to be substituted
+            curr_output = all_stages_outputs[in_deliverable]
+
+            explicit[in_deliverable] = curr_output
 
         return explicit
 
-    def get_stage_outputs(self, stage):
+    def get_stage_outputs(self, stage: Union[str, omni_schema.Stage]) -> Dict[str, str]:
+        """Get outputs of a stage by stage/stage_id"""
+
         if isinstance(stage, str):
-            stage = self.get_benchmark_stages()[stage]
+            stage = self.get_stages()[stage]
 
         return dict([(output.id, output.path) for output in stage.outputs])
 
-    def get_module_excludes(self, module):
+    def get_output_stage(self, output_id: str) -> omni_schema.Stage:
+        """Get stage that returns output with out_id"""
+
+        stage_by_output: dict = {}
+        for stage in self.model.stages:
+            stage_by_output.update({out.id: stage for out in stage.outputs})
+
+        return stage_by_output.get(output_id)
+
+    def get_module_excludes(self, module: Union[str, omni_schema.Module]) -> List[str]:
+        """Get module excludes by module/module_id"""
+
         if isinstance(module, str):
-            module = self.get_benchmark_modules()[module]
+            module = self.get_modules()[module]
 
         return module.exclude
 
-    def get_module_parameters(self, module):
+    def get_module_parameters(self, module: Union[str, omni_schema.Module]) -> List[str]:
+        """Get module parameters by module/module_id"""
+
+        if isinstance(module, str):
+            module = self.get_modules()[module]
+
         params = None
         if module.parameters is not None:
             params = [x.values for x in module.parameters]
 
         return params
 
-    def get_module_repository(self, module):
+    def get_module_repository(self, module: Union[str, omni_schema.Module]) -> omni_schema.Repository:
+        """Get module repository by module/module_id"""
+
+        if isinstance(module, str):
+            module = self.get_modules()[module]
+
         return module.repository
 
-    def is_initial(self, stage):
+    def is_initial(self, stage: omni_schema.Stage) -> bool:
+        """Check if stage is initial"""
+
         if stage.inputs is None or len(stage.inputs) == 0:
             return True
         else:
             return False
 
-    def get_after(self, stage):
-        return stage.after
+    def get_outputs(self) -> Dict[str, str]:
+        """Get outputs"""
 
-    def get_stage_ids(self):
-        return [x.id for x in self.benchmark.stages]
-
-    def get_module_ids(self):
-        module_ids = []
-        for stage in self.benchmark.stages:
-            for module in stage.modules:
-                module_ids.append(module.id)
-
-        return module_ids
-
-    def get_output_ids(self):
-        output_ids = []
-        for stage in self.benchmark.stages:
+        outputs = {}
+        for stage_id, stage in self.get_stages().items():
             for output in stage.outputs:
-                output_ids.append(output.id)
+                outputs[output.id] = output
 
-        return output_ids
+        return outputs
 
-    def get_initial_datasets(self):
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if self.is_initial(stage):
-                return self.get_modules_by_stage(stage)
+    def get_modules(self) -> Dict[str, omni_schema.Module]:
+        """Get modules"""
 
-    def get_initial_stage(self):
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
-            if self.is_initial(stage):
-                return stage
-
-    def get_benchmark_modules(self):
         modules = {}
-        stages = self.get_benchmark_stages()
-        for stage_id in stages:
-            stage = stages[stage_id]
+
+        for stage_id, stage in self.get_stages().items():
             modules_in_stage = self.get_modules_by_stage(stage)
             modules.update(modules_in_stage)
 
         return modules
-
-    def stage_order(self, element):
-        if self.stage_order_map is None:
-            self.stage_order_map = self._compute_stage_order()
-
-        return self.stage_order_map.get(element)
-
-    def _compute_stage_order(self):
-        stages = list(self.get_benchmark_stages().values())
-        stage_order_map = {
-            self.get_stage_id(stage): pos for pos, stage in enumerate(stages)
-        }
-        # FIXME very rudimentary computation of ordering
-        # FIXME Might be more complex in future benchmarking scenarios
-        # Assuming the order in which stages appear in the benchmark YAML is the actual order of the stages during execution
-
-        return stage_order_map

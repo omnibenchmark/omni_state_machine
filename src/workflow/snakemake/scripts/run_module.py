@@ -1,9 +1,5 @@
 #! /usr/bin/env python
-##
-## A benchmarking (fake) step parsing params, inputs and outputs
-##
-## Started 22 Feb 2024
-## Izaskun Mallona
+
 import hashlib
 import subprocess
 import logging

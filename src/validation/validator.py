@@ -1,5 +1,7 @@
 from collections import Counter
+from typing import Union
 
+from src.converter import LinkMLConverter
 from src.validation import ValidationError
 
 
@@ -9,10 +11,10 @@ class Validator:
     def __init__(self):
         self.errors = []
 
-    def validate(self, benchmark_converter):
+    def validate(self, converter: LinkMLConverter) -> Union[ValidationError, LinkMLConverter]:
 
         # Validate ids are unique
-        stage_ids = benchmark_converter.get_stage_ids()
+        stage_ids = converter.get_stages().keys()
         duplicate_stage_ids = Validator.find_duplicate(stage_ids)
         if duplicate_stage_ids:
             self.errors.append(
@@ -21,7 +23,7 @@ class Validator:
                 )
             )
 
-        module_ids = benchmark_converter.get_module_ids()
+        module_ids = converter.get_modules().keys()
         duplicate_module_ids = Validator.find_duplicate(module_ids)
         if duplicate_module_ids:
             self.errors.append(
@@ -30,7 +32,7 @@ class Validator:
                 )
             )
 
-        output_ids = benchmark_converter.get_output_ids()
+        output_ids = converter.get_outputs().keys()
         duplicate_output_ids = Validator.find_duplicate(output_ids)
         if duplicate_output_ids:
             self.errors.append(
@@ -39,8 +41,8 @@ class Validator:
                 )
             )
 
-        for stage_id in benchmark_converter.get_benchmark_stages():
-            stage_inputs_set = benchmark_converter.get_stage_implicit_inputs(stage_id)
+        for stage_id in converter.get_stages():
+            stage_inputs_set = converter.get_stage_implicit_inputs(stage_id)
             for stage_inputs in stage_inputs_set:
                 for stage_input_id in stage_inputs:
                     if stage_input_id not in output_ids:
@@ -54,7 +56,7 @@ class Validator:
         if self.errors:
             raise ValidationError(self.errors)
         else:
-            return benchmark_converter
+            return converter
 
     @staticmethod
     def find_duplicate(ids):

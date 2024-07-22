@@ -14,7 +14,7 @@ class Benchmark:
 
         self.converter = converter
         self.out_dir = out_dir
-        self.G = dag.build_dag_from_definition(converter, self.out_dir)
+        self.G = dag.build_benchmark_dag(converter, self.out_dir)
 
         self.execution_paths = None
 
@@ -22,10 +22,10 @@ class Benchmark:
         return self.converter
 
     def get_benchmark_name(self):
-        return self.converter.get_benchmark_name()
+        return self.converter.get_name()
 
     def get_definition(self):
-        return self.converter.get_benchmark_definition()
+        return self.converter.get_definition()
 
     def get_definition_file(self):
         return self.converter.benchmark_file
@@ -34,7 +34,7 @@ class Benchmark:
         return list(self.G.nodes)
 
     def get_stage_ids(self):
-        return self.converter.get_stage_ids()
+        return self.converter.get_stages().keys()
 
     def get_node_by_id(self, node_id):
         for node in self.G.nodes:
@@ -63,22 +63,22 @@ class Benchmark:
         return set(output_paths)
 
     def get_explicit_inputs(self, stage_id: str, test: bool = True):
-        stage = self.converter.get_benchmark_stage(stage_id)
+        stage = self.converter.get_stage(stage_id)
         implicit_inputs = self.converter.get_stage_implicit_inputs(stage)
         explicit_inputs = [
-            self.converter.get_stage_explicit_inputs(i) for i in implicit_inputs
+            self.converter.get_explicit_inputs(i) for i in implicit_inputs
         ]
         return explicit_inputs
 
     def get_explicit_outputs(self, stage_id: str):
-        stage = self.converter.get_benchmark_stage(stage_id)
+        stage = self.converter.get_stage(stage_id)
         return self.converter.get_stage_outputs(stage)
 
     def get_available_parameter(self, module_id: str):
         node = next(node for node in self.G.nodes if node.module_id == module_id)
         return node.get_parameters()
 
-    def plot_graph(self):
+    def plot_benchmark_graph(self):
         dag.plot_graph(
             self.G, output_file="output_dag.png", scale_factor=1.5, node_spacing=0.2
         )
@@ -102,7 +102,7 @@ class Benchmark:
 
     def _get_path_exclusions(self):
         path_exclusions = {}
-        stages = self.converter.get_benchmark_stages()
+        stages = self.converter.get_stages()
         for stage_id in stages:
             stage = stages[stage_id]
 

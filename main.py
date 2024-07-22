@@ -19,7 +19,7 @@ def main(benchmark_file):
     converter = benchmark.get_converter()
     print(benchmark.get_definition())
 
-    stages = converter.get_benchmark_stages()
+    stages = converter.get_stages()
     for stage_id in stages:
         stage = stages[stage_id]
         stage_name = stage["name"]
@@ -31,7 +31,7 @@ def main(benchmark_file):
         print(
             "  Explicit inputs:\n",
             [
-                converter.get_stage_explicit_inputs(i)
+                converter.get_explicit_inputs(i)
                 for i in converter.get_stage_implicit_inputs(stage)
             ],
         )
@@ -58,7 +58,7 @@ def main(benchmark_file):
     outputs_paths = sorted(benchmark.get_output_paths())
     print("All output paths:", outputs_paths)
 
-    benchmark.plot_graph()
+    benchmark.plot_benchmark_graph()
 
     # Serialize workflow to Snakefile
     workflow = SnakemakeEngine()
