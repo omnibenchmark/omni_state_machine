@@ -1,9 +1,20 @@
+import os.path
+
+from omni_schema.datamodel.omni_schema import Repository
+
 
 class BenchmarkNode:
-    def __init__(self, converter,
-                 stage, module, parameters,
-                 inputs, outputs,
-                 param_id, after=None):
+    def __init__(
+        self,
+        converter,
+        stage,
+        module,
+        parameters,
+        inputs,
+        outputs,
+        param_id,
+        after=None,
+    ):
 
         self.converter = converter
         self.stage = stage
@@ -13,35 +24,115 @@ class BenchmarkNode:
         self.outputs = outputs
         self.after = after
 
-        self.stage_id = converter.get_stage_id(stage)
-        self.module_id = converter.get_module_id(module)
-        self.param_id = f'param_{param_id}' if parameters else 'default'
+        self.stage_id = stage.id
+        self.module_id = module.id
+        self.param_id = f"param_{param_id}" if parameters else "default"
+
+    def get_id(self):
+        return BenchmarkNode.to_id(
+            self.stage_id, self.module_id, self.param_id, self.after
+        )
+
+    def get_benchmark_name(self):
+        return self.converter.get_name()
+
+    def get_benchmark_version(self):
+        return self.converter.get_version()
+
+    def get_benchmark_author(self):
+        return self.converter.get_author()
+
+    def get_definition(self):
+        return self.converter.get_definition()
+
+    def get_definition_file(self):
+        return self.converter.benchmark_file
 
     def get_inputs(self):
-        return self.inputs
+        return self.inputs.values() if self.inputs else []
+
+    def get_inputs_dict(self):
+        return self.inputs if self.inputs else {}
+
+    def get_explicit_inputs(self):
+        explicit_inputs = [
+            self.converter.get_explicit_inputs(i)
+            for i in self.converter.get_stage_implicit_inputs(self.stage)
+        ]
+        return explicit_inputs
+
+    def get_benchmark_name(self):
+        return self.converter.get_name()
+
+    def get_input_paths(self, config, return_as_dict=False):
+        input_paths = {}
+        inputs = self.inputs.items() if self.inputs else {}
+        for key, input in inputs:
+            input = os.path.basename(input)
+            input = input.replace("{dataset}", config["dataset"])
+            input = os.path.join(config["input"], input)
+            input_paths[key] = input
+
+        if return_as_dict:
+            return input_paths
+        else:
+            return list(input_paths.values())
 
     def get_outputs(self):
-        return self.outputs
+        return self.outputs if self.outputs else []
+
+    def get_output_paths(self, config):
+        output_paths = []
+
+        pre = config.get("input", config.get("output"))
+        dataset = config["dataset"]
+        for output in self.get_outputs():
+            output = output.format(
+                pre=pre,
+                dataset=dataset,
+                stage=self.stage_id,
+                module=self.module_id,
+                params=self.param_id,
+            )
+
+            output_paths.append(output)
+
+        return output_paths
 
     def get_parameters(self):
         return self.parameters
 
+    def get_repository(self):
+        return self.converter.get_module_repository(module=self.module)
+
     def is_initial(self):
         return self.converter.is_initial(self.stage)
 
+    def get_stage(self):
+        return self.stage
+
     def __str__(self):
-        node_str = f"BenchmarkNode({self.stage_id}, {self.module_id}, {self.param_id}"
-        node_str += f', after={self.after})' if self.after else ')'
-        return node_str
+        return f"BenchmarkNode({self.get_id()})"
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
         if isinstance(other, BenchmarkNode):
-            return (self.stage_id, self.module_id, self.parameters, self.inputs) == \
-                   (other.stage_id, other.module_id, other.parameters, other.inputs)
+            return (self.stage_id, self.module_id, self.parameters, self.inputs) == (
+                other.stage_id,
+                other.module_id,
+                other.parameters,
+                other.inputs,
+            )
         return False
 
     def __hash__(self):
-        return hash((self.stage_id, self.module_id, self.param_id, self.after))
+        return hash(self.get_id())
+
+    @staticmethod
+    def to_id(stage_id, module_id, param_id, after_stage_id=None):
+        node_id = f"{stage_id}-{module_id}-{param_id}"
+        node_id += f"-after_{after_stage_id}" if after_stage_id else ""
+
+        return node_id

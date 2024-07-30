@@ -5,7 +5,7 @@ from linkml_runtime.loaders import yaml_loader
 
 
 def load_yaml_file(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         try:
             yaml_data = yaml.safe_load(file)
             return yaml_data
@@ -14,13 +14,16 @@ def load_yaml_file(file_path):
             return None
 
 
-def load_benchmark(file_path):
+def load_yaml(file_path):
     benchmark = yaml_loader.load(file_path, model.Benchmark)
+
     return benchmark
 
 
 def merge_dict_list(list_of_dicts):
-    merged_dict = {key: value for d in list_of_dicts if d is not None for key, value in d.items()}
+    merged_dict = {
+        key: value for d in list_of_dicts if d is not None for key, value in d.items()
+    }
 
     return merged_dict
 
@@ -33,10 +36,8 @@ def make_folder_name_safe(parameter_value):
 
 
 def format_name(path, prefix):
-    pattern = fr'{prefix}/.+?/([^/]+)/.+?$'
-    name = re.match(pattern, path)[1]
-    new_path = path.format(name=name)
+    pattern = rf"{prefix}/.+?/([^/]+)/.+?$"
+    dataset = re.match(pattern, path)[1]
+    new_path = path.format(dataset=dataset)
 
     return new_path
-
-

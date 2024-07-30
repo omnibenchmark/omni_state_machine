@@ -1,20 +1,53 @@
-import src.dag_operations as dag
-from src.helpers import *
+from pathlib import Path
+
+import src.model.dag_operations as dag
+from src.converter import LinkMLConverter
+from src.utils.helpers import *
+from src.validation import Validator
 
 
 class Benchmark:
-    def __init__(self, converter, output_folder='out'):
+    def __init__(self, benchmark_yaml: Path, out_dir: str = "out"):
+        converter = LinkMLConverter(benchmark_yaml)
+        validator = Validator()
+        converter = validator.validate(converter)
+
         self.converter = converter
-        self.output_folder = output_folder
-        self.G = dag.build_dag_from_definition(converter, self.output_folder)
+        self.out_dir = out_dir
+        self.G = dag.build_benchmark_dag(converter, self.out_dir)
 
         self.execution_paths = None
 
+    def get_converter(self):
+        return self.converter
+
+    def get_benchmark_name(self):
+        return self.converter.get_name()
+
+    def get_benchmark_version(self):
+        return self.converter.get_version()
+
+    def get_benchmark_author(self):
+        return self.converter.get_author()
+
     def get_definition(self):
-        return self.converter.get_benchmark_definition()
+        return self.converter.get_definition()
+
+    def get_definition_file(self):
+        return self.converter.benchmark_file
 
     def get_nodes(self):
         return list(self.G.nodes)
+
+    def get_stage_ids(self):
+        return self.converter.get_stages().keys()
+
+    def get_node_by_id(self, node_id):
+        for node in self.G.nodes:
+            if node.get_id() == node_id:
+                return node
+
+        return None
 
     def get_execution_paths(self):
         if self.execution_paths is None:
@@ -26,29 +59,35 @@ class Benchmark:
         execution_paths = self.get_execution_paths()
 
         output_paths = [
-            format_name(output, self.output_folder)
+            format_name(output, self.out_dir)
             for path in execution_paths
-            for output in self._construct_output_paths(prefix=self.output_folder, nodes=path)
+            for output in self._construct_output_paths(
+                prefix=self.out_dir, nodes=path
+            )
         ]
 
         return set(output_paths)
 
     def get_explicit_inputs(self, stage_id: str, test: bool = True):
-        stage = self.converter.get_benchmark_stage(stage_id)
+        stage = self.converter.get_stage(stage_id)
         implicit_inputs = self.converter.get_stage_implicit_inputs(stage)
-        explicit_inputs = [self.converter.get_stage_explicit_inputs(i) for i in implicit_inputs]
+        explicit_inputs = [
+            self.converter.get_explicit_inputs(i) for i in implicit_inputs
+        ]
         return explicit_inputs
 
     def get_explicit_outputs(self, stage_id: str):
-        stage = self.converter.get_benchmark_stage(stage_id)
+        stage = self.converter.get_stage(stage_id)
         return self.converter.get_stage_outputs(stage)
 
     def get_available_parameter(self, module_id: str):
         node = next(node for node in self.G.nodes if node.module_id == module_id)
         return node.get_parameters()
 
-    def plot_graph(self):
-        dag.plot_graph(self.G, output_file='output_dag.png', scale_factor=1.5, node_spacing=0.2)
+    def plot_benchmark_graph(self):
+        dag.plot_graph(
+            self.G, output_file="output_dag.png", scale_factor=1.5, node_spacing=0.2
+        )
 
     def __str__(self):
         return f"Benchmark({self.get_definition})"
@@ -69,7 +108,7 @@ class Benchmark:
 
     def _get_path_exclusions(self):
         path_exclusions = {}
-        stages = self.converter.get_benchmark_stages()
+        stages = self.converter.get_stages()
         for stage_id in stages:
             stage = stages[stage_id]
 
@@ -89,15 +128,20 @@ class Benchmark:
             tail = nodes[1:]
             stage_outputs = self.converter.get_stage_outputs(head.stage_id).values()
 
-            current_path = f'{head.stage_id}/{head.module_id}'
-            if any(['{params}' in o for o in stage_outputs]):
-                current_path += f'/{head.param_id}'
+            current_path = f"{head.stage_id}/{head.module_id}"
+            if any(["{params}" in o for o in stage_outputs]):
+                current_path += f"/{head.param_id}"
 
-            new_prefix = f'{prefix}/{current_path}'
-            paths = [x.format(input_dirname=prefix,
-                              stage=head.stage_id,
-                              module=head.module_id,
-                              params=head.param_id,
-                              name='{name}') for x in stage_outputs]
+            new_prefix = f"{prefix}/{current_path}"
+            paths = [
+                x.format(
+                    input=prefix,
+                    stage=head.stage_id,
+                    module=head.module_id,
+                    params=head.param_id,
+                    dataset="{dataset}",
+                )
+                for x in stage_outputs
+            ]
 
             return paths + self._construct_output_paths(new_prefix, tail)

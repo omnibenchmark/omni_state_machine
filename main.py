@@ -1,4 +1,3 @@
-from src.helpers import *
 from src.converter import LinkMLConverter
 from src.model.benchmark import Benchmark
 
@@ -6,6 +5,7 @@ import os
 import argparse
 
 from src.validation import Validator, ValidationError
+from src.workflow.snakemake.snakemake import SnakemakeEngine
 
 
 ##
@@ -15,54 +15,65 @@ from src.validation import Validator, ValidationError
 
 
 def main(benchmark_file):
-    benchmark_yaml = load_benchmark(benchmark_file)
-    converter = LinkMLConverter(benchmark_yaml)
-    validator = Validator()
-    converter = validator.validate(converter)
-    benchmark = Benchmark(converter)
+    benchmark = Benchmark(benchmark_file)
+    converter = benchmark.get_converter()
     print(benchmark.get_definition())
 
-    stages = converter.get_benchmark_stages()
+    stages = converter.get_stages()
     for stage_id in stages:
         stage = stages[stage_id]
-        stage_name = stage['name']
-        print('Stage', stage_name)
+        stage_name = stage["name"]
+        print("Stage", stage_name if stage_name else stage_id)
 
         modules_in_stage = converter.get_modules_by_stage(stage)
-        print('  ', stage_name, 'with modules', modules_in_stage.keys(), '\n')
-        print('  Implicit inputs:\n', converter.get_stage_implicit_inputs(stage))
-        print('  Explicit inputs:\n', [converter.get_stage_explicit_inputs(i)
-                                       for i in converter.get_stage_implicit_inputs(stage)])
-        print('  Outputs\n', converter.get_stage_outputs(stage))
-        print('------')
+        print("  ", stage_name, "with modules", modules_in_stage.keys(), "\n")
+        print("  Implicit inputs:\n", converter.get_stage_implicit_inputs(stage))
+        print(
+            "  Explicit inputs:\n",
+            [
+                converter.get_explicit_inputs(i)
+                for i in converter.get_stage_implicit_inputs(stage)
+            ],
+        )
+        print("  Outputs\n", converter.get_stage_outputs(stage))
+        print("------")
 
         for module_id in modules_in_stage:
             module = modules_in_stage[module_id]
-            module_name = module['name']
-            print('  Module', module_name)
-            print('    Repo:', converter.get_module_repository(module))
-            print('    Excludes:', converter.get_module_excludes(module))
-            print('    Params:', converter.get_module_parameters(module))
-        print('------')
+            module_name = module["name"]
+            print("  Module", module_name if module_name else module_id)
+            print("    Repo:", converter.get_module_repository(module))
+            print("    Excludes:", converter.get_module_excludes(module))
+            print("    Params:", converter.get_module_parameters(module))
+        print("------")
 
-    print('------')
+    print("------")
 
     nodes = benchmark.get_nodes()
-    print('All nodes:', nodes)
+    print("All nodes:", nodes)
 
     execution_paths = benchmark.get_execution_paths()
-    print('All execution paths:', execution_paths)
+    print("All execution paths:", execution_paths)
 
     outputs_paths = sorted(benchmark.get_output_paths())
-    print('All output paths:', outputs_paths)
+    print("All output paths:", outputs_paths)
 
-    benchmark.plot_graph()
+    benchmark.plot_benchmark_graph()
+
+    # Serialize workflow to Snakefile
+    workflow = SnakemakeEngine()
+    workflow.run_workflow(benchmark)
+    # workflow.run_node_workflow(nodes[2], input_dir="out/data/D1/default", dataset="D1")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Test OmniWorkflow converter.')
-    parser.add_argument('--benchmark_file', default='data/Benchmark_001',
-                        type=str, help='Location of the benchmark file')
+    parser = argparse.ArgumentParser(description="Test OmniWorkflow converter.")
+    parser.add_argument(
+        "--benchmark_file",
+        default="data/Benchmark_001.yaml",
+        type=str,
+        help="Location of the benchmark file",
+    )
 
     args = parser.parse_args()
     benchmark_file = args.benchmark_file
@@ -71,7 +82,8 @@ if __name__ == "__main__":
         try:
             main(benchmark_file)
         except ValidationError as e:
-            print(f"Validation failed: \n {e}")
-
+            print("Validation failed: \n")
+            for error in e.errors:
+                print(error)
     else:
-        print(f'Benchmark file {benchmark_file} does not exist.')
+        raise RuntimeError(f"Benchmark file {benchmark_file} does not exist.")
